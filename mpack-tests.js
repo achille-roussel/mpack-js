@@ -4,7 +4,7 @@ function MpackTestSuite() {
 
   this.assert = function(test) {
     if (!test) {
-      throw null
+      throw 'Failed'
     }
   }
 
@@ -59,6 +59,57 @@ function MpackTestSuite() {
       var value = mpack.decode(bytes)
       self.assert(bytes.byteLength === 300002)
       self.assert(value === string)
+    },
+
+    "bin8": function(self) {
+      var binary = new Uint8Array(20)
+      for (var i = 0; i != 20; ++i) {
+        binary[i] = i
+      }
+
+      var bytes = mpack.encode(binary)
+      var value = mpack.decode(bytes)
+      
+      self.assert(bytes.byteLength == 22)
+      self.assert(value.byteLength == 20)
+
+      for (var i = 0; i != 20; ++i) {
+        self.assert(value[i] == i)
+      }
+    },
+
+    "bin16": function(self) {
+      var binary = new Uint8Array(1000)
+      for (var i = 0; i != 1000; ++i) {
+        binary[i] = i % 256
+      }
+
+      var bytes = mpack.encode(binary)
+      var value = mpack.decode(bytes)
+      
+      self.assert(bytes.byteLength == 1003)
+      self.assert(value.byteLength == 1000)
+
+      for (var i = 0; i != 1000; ++i) {
+        self.assert(value[i] == (i % 256))
+      }
+    },
+
+    "bin32": function(self) {
+      var binary = new Uint8Array(100000)
+      for (var i = 0; i != 100000; ++i) {
+        binary[i] = i % 256
+      }
+
+      var bytes = mpack.encode(binary)
+      var value = mpack.decode(bytes)
+      
+      self.assert(bytes.byteLength == 100005)
+      self.assert(value.byteLength == 100000)
+
+      for (var i = 0; i != 100000; ++i) {
+        self.assert(value[i] == (i % 256))
+      }
     },
 
     "fixnum.positive": function(self) {
@@ -252,13 +303,13 @@ function MpackTestSuite() {
     for (name in this.tests) {
       count += 1
       try {
-        this.tests[name](this)
+        this.run_test(name)
         console.log("- " + name + " (OK)")
       }
       catch (e) {
         failed += 1
         console.log(e)
-        console.log("- " + name + ": failed! " + ((e === null) ? "" : e))
+        console.log("- " + name + ": " + e)
       }
     }
 
@@ -266,8 +317,8 @@ function MpackTestSuite() {
       console.log(failed + "/" + count + " test(s) failed!")
     }
   }
-}
 
-window.onload = function() {
-  (new MpackTestSuite()).run()
+  this.run_test = function(name) {
+    return this.tests[name](this)
+  }
 }

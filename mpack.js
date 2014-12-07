@@ -8,6 +8,11 @@ function mpack_decode_utf8__(s) {
   return decodeURIComponent(escape(s))
 }
 
+function mpack_memcpy__(dst, src) {
+  new Uint8Array(dst).set(new Uint8Array(src))
+  return dst
+}
+
 var mpack = {
   "nil"     : 0xc0,
   "false"   : 0xc2,
@@ -111,6 +116,27 @@ mpack.Decoder = function(buffer) {
     var length = self.view.getUint32(self.offset)
     self.offset += 4
     return decode_string_of_length(self, length)
+  }
+
+  var decode_bin8 = function(self) {
+    var length = self.view.getUint8(self.offset)
+    var offset = self.offset + 1
+    self.offset = offset + length
+    return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
+  }
+
+  var decode_bin16 = function(self) {
+    var length = self.view.getUint16(self.offset)
+    var offset = self.offset + 2
+    self.offset = offset + length
+    return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
+  }
+
+  var decode_bin32 = function(self) {
+    var length = self.view.getUint32(self.offset)
+    var offset = self.offset + 4
+    self.offset = offset + length
+    return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
   var decode_positive_fixnum = function(self, tag) {
@@ -276,6 +302,15 @@ mpack.Decoder = function(buffer) {
     case mpack.str32:
       return decode_str32(self)
 
+    case mpack.bin8:
+      return decode_bin8(self)
+
+    case mpack.bin16:
+      return decode_bin16(self)
+
+    case mpack.bin32:
+      return decode_bin32(self)
+
     case mpack.int8:
       return decode_int8(self)
 
@@ -339,11 +374,22 @@ mpack.decode = function(buffer) {
   return (new mpack.Decoder(buffer)).decode()
 }
 
-mpack.Encoder = function(min_buffer_size, max_buffer_size) {
-  this.min_buffer_size = min_buffer_size !== undefined ? min_buffer_size : 1000
-  this.max_buffer_size = max_buffer_size !== undefined ? max_buffer_size : 10000000
+mpack.Encoder = function(buffer, offset) {
   this.buffer = null
   this.length = 0
+
+  if (buffer !== undefined) {
+    if (buffer instanceof ArrayBuffer) {
+      this.buffer = buffer
+
+      if (offset !== undefined) {
+        this.length = offset
+      }
+    }
+    else {
+      throw "mpack.Encoder: buffer must be undefined or an ArrayBuffer instance"
+    }
+  }
 
   var encode_null = function(view, offset) {
     view.setUint8(offset, mpack.nil)
@@ -389,6 +435,29 @@ mpack.Encoder = function(min_buffer_size, max_buffer_size) {
     }
 
     return (offset + object.length) - save_offset
+  }
+
+  var encode_binary = function(view, offset, object) {
+    var save_offset = offset
+    
+    if (object.byteLength <= 255) {
+      view.setUint8(offset, mpack.bin8)
+      view.setUint8(offset + 1, object.byteLength)
+      offset += 2
+    }
+    else if (object.byteLength <= 65535) {
+      view.setUint8(offset, mpack.bin16)
+      view.setUint16(offset + 1, object.byteLength)
+      offset += 3
+    }
+    else {
+      view.setUint8(offset, mpack.bin32)
+      view.setUint32(offset + 1, object.byteLength)
+      offset += 5
+    }
+
+    new Uint8Array(view.buffer, view.byteOffset + offset).set(object)
+    return (offset + object.byteLength) - save_offset    
   }
 
   var encode_integer = function(view, offset, object) {
@@ -465,7 +534,7 @@ mpack.Encoder = function(min_buffer_size, max_buffer_size) {
   }
 
   var encode_array = function(view, offset, object) {
-    var save_offset = offset;
+    var save_offset = offset
 
     if (object.length <= 15) {
       view.setUint8(offset, mpack.fixarray | object.length)
@@ -537,6 +606,38 @@ mpack.Encoder = function(min_buffer_size, max_buffer_size) {
       return encode_array(view, offset, object)
     }
 
+    if (object instanceof ArrayBuffer) {
+      return encode_binary(view, offset, new Uint8Array(object))
+    }
+
+    if (object instanceof Uint8Array) {
+      return encode_binary(view, offset, object)
+    }
+
+    if (object instanceof Uint16Array) {
+      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+    }
+
+    if (object instanceof Uint32Array) {
+      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+    }
+
+    if (object instanceof Int8Array) {
+      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+    }
+
+    if (object instanceof Int16Array) {
+      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+    }
+
+    if (object instanceof Int32Array) {
+      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+    }
+
+    if (object instanceof DataView) {
+      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+    }
+
     switch (typeof object) {
     case 'string':
       return encode_string(view, offset, object)
@@ -552,17 +653,16 @@ mpack.Encoder = function(min_buffer_size, max_buffer_size) {
   }
 
   this.encode = function(object) {
-    var size;
+    var size = 1000
 
     if (this.buffer === null) {
-      size = this.min_buffer_size
       this.buffer = new ArrayBuffer(size)
     }
     else {
       size = this.buffer.byteLength
     }
 
-    while (size < this.max_buffer_size) {
+    while (true) {
       try {
         this.length += encode_object(new DataView(this.buffer), this.length, object)
         break
@@ -573,10 +673,7 @@ mpack.Encoder = function(min_buffer_size, max_buffer_size) {
         }
 
         size *= 10
-
-        var buffer = this.buffer
-        this.buffer = new ArrayBuffer(size)
-        new Uint8Array(this.buffer).set(new Uint8Array(buffer))
+        this.buffer = mpack_memcpy__(new ArrayBuffer(size), this.buffer)
       }
     }
 
