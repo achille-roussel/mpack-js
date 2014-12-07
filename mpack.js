@@ -602,6 +602,14 @@ mpack.Encoder = function(buffer, offset) {
       return encode_false(view, offset)
     }
 
+    if ((typeof object) == 'string') {
+      return encode_string(view, offset, object)
+    }
+
+    if ((typeof object) == 'number') {
+      return encode_number(view, offset, object)
+    }
+
     if (object instanceof Array) {
       return encode_array(view, offset, object)
     }
@@ -638,14 +646,7 @@ mpack.Encoder = function(buffer, offset) {
       return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
     }
 
-    switch (typeof object) {
-    case 'string':
-      return encode_string(view, offset, object)
-
-    case 'number':
-      return encode_number(view, offset, object)
-
-    case 'object':
+    if ((typeof object) == 'object') {
       return encode_map(view, offset, object)
     }
       
