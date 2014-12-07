@@ -276,7 +276,7 @@ function MpackTestSuite() {
 
     "fixext1": function(self) {
       var object = new Uint8Array([42])
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(bytes.byteLength === 3)
@@ -287,7 +287,7 @@ function MpackTestSuite() {
 
     "fixext2": function(self) {
       var object = new Uint8Array([1, 2])
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(bytes.byteLength === 4)
@@ -299,7 +299,7 @@ function MpackTestSuite() {
 
     "fixext4": function(self) {
       var object = new Uint8Array([1, 2, 3, 4])
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(bytes.byteLength === 6)
@@ -313,7 +313,7 @@ function MpackTestSuite() {
 
     "fixext8": function(self) {
       var object = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(bytes.byteLength === 10)
@@ -327,7 +327,7 @@ function MpackTestSuite() {
 
     "fixext16": function(self) {
       var object = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(bytes.byteLength === 18)
@@ -345,7 +345,7 @@ function MpackTestSuite() {
         object[i] = (i % 256)
       }
 
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(value.type == 10)
@@ -362,7 +362,7 @@ function MpackTestSuite() {
         object[i] = (i % 256)
       }
 
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(value.type == 10)
@@ -379,7 +379,7 @@ function MpackTestSuite() {
         object[i] = (i % 256)
       }
 
-      var bytes = mpack.encode_extended(10, object)
+      var bytes = mpack.encode(new mpack.Extended(10, object))
       var value = mpack.decode(bytes)
 
       self.assert(value.type == 10)

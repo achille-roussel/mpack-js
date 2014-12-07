@@ -52,11 +52,12 @@ var mpack = {
     "positive": 0x00,
     "negative": 0xe0,
   },
-  "tags"   : null,
-  "Decoder": null,
-  "decode" : null,
-  "Encoder": null,
-  "encode" : null,
+  "tags"    : null,
+  "Decoder" : null,
+  "decode"  : null,
+  "Encoder" : null,
+  "encode"  : null,
+  "Extended": null,
 }
 
 var mpack_tags__ = { }
@@ -263,10 +264,7 @@ mpack.Decoder = function(buffer) {
     var type = self.view.getUint8(self.offset)
     var offset = self.offset + 1
     self.offset = offset + length
-    return {
-      'type': type,
-      'data': new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length),
-    }
+    return new mpack.Extended(type, new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length))
   }
 
   var decode_fixext1 = function(self) {
@@ -778,6 +776,10 @@ mpack.Encoder = function(buffer, offset) {
       return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
     }
 
+    if (object instanceof mpack.Extended) {
+      return encode_extended(view, offset, object)
+    }
+
     if ((typeof object) == 'object') {
       return encode_map(view, offset, object)
     }
@@ -845,11 +847,8 @@ mpack.Encoder = function(buffer, offset) {
     return encode(this, object, encode_map)
   }
 
-  this.encode_extended = function(type, data) {
-    if ((type < -256) || (type > 255)) {
-      throw RangeError("mpack: invalid extended type [" + type + "]")
-    }
-    return encode(this, { 'type': type, 'data': data }, encode_extended)
+  this.encode_extended = function(object) {
+    return encode(this, object, encode_extended)
   }
 
   this.bytes = function() {
@@ -869,6 +868,11 @@ mpack.encode = function(object) {
   return (new mpack.Encoder()).encode(object).flush()
 }
 
-mpack.encode_extended = function(type, data) {
-  return (new mpack.Encoder()).encode_extended(type, data).flush()
+mpack.Extended = function(type, data) {
+  if ((type < -256) || (type > 255)) {
+    throw RangeError("mpack: invalid extended type [" + type + "]")
+  }
+  this.type = type
+  this.data = data
 }
+

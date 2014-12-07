@@ -48,7 +48,7 @@ var type = 42 // must be an integer in the range [-256; 255]
 
 // Encode the given binary data as an extended data type using MessagePack
 // extension support.
-var bytes = mpack.encode_extended(type, data)
+var bytes = mpack.encode(new mpack.Extended(type, data))
 
 // Decode works like any other data type, the returned object has two fields
 // named data and type.
