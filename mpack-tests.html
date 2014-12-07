@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <title>mpack-js</title>
+    <meta charset="UTF-8"/>
+    <script type="text/javascript" src="mpack.js"></script>
+    <script type="text/javascript" src="mpack-tests.js"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        var test_results = document.getElementById('test-results')
+        var test_suite = new MpackTestSuite()
+        var test_count = 0
+        var test_fail  = 0
+        var start_time = (new Date()).getTime()
+
+        // Run test suite, append results to the 'test-results' list.
+        for (test_name in test_suite.tests) {
+          var test_results_entry = document.createElement('li')
+          try {
+            test_count += 1
+            test_suite.run_test(test_name)
+            test_results_entry.innerHTML = test_name + ' (OK)'
+          }
+          catch (e) {
+            test_fail += 1
+            test_results_entry.innerHTML = test_name + ' (<span style="color:red">' + e + '</span>)'
+          }
+          test_results.appendChild(test_results_entry)
+        }
+
+        // Compute and display the time it took to run the test suite.
+        var end_time = (new Date()).getTime()
+        var time_elm = document.createElement('p')
+        time_elm.innerHTML = 'test suite ran in ' + ((end_time - start_time) / 1000.0) + 's'
+        document.getElementById('main').appendChild(time_elm)
+      }
+    </script>
+  </head>
+  <body id="main" style="font-family:monospace">
+    <h1>Running mpack-js test suite...</h1>
+    <ul id="test-results">
+      <!-- filled by test script -->
+    </ul>
+  </body>
+</html>
