@@ -276,7 +276,6 @@ function MpackTestSuite() {
 
     "Encoder-Decoder": function(self) {
       var encoder = new mpack.Encoder()
-
       self.assert(encoder.encode('hello'))
       self.assert(encoder.encode('world'))
       self.assert(encoder.encode('!!!'))
@@ -285,13 +284,7 @@ function MpackTestSuite() {
       self.assert(decoder.decode() === 'hello')
       self.assert(decoder.decode() === 'world')
       self.assert(decoder.decode() === '!!!')
-
-      try {
-        decoder.decode()
-      }
-      catch (e) {
-        self.assert(e instanceof RangeError)
-      }
+      self.assert(decoder.decode() === undefined)
     },
   }
 

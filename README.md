@@ -21,13 +21,13 @@ console.log(object.answer) // 42
 You can also use the Encoder and Decoder objects to build MessagePack messages
 from a sequence of multiple objects:
 ```js
-var encoder = mpack.Encoder()
+var encoder = new mpack.Encoder()
 
 encoder.encode('hello')
 encoder.encode(42)
 encoder.encode([1, 2, 3])
 
-var decoder = mpack.Decoder(encoder.flush())
+var decoder = new mpack.Decoder(encoder.flush())
 var object  = null
 
 object = decoder.decode() // hello

@@ -365,7 +365,10 @@ mpack.Decoder = function(buffer) {
     }
     catch (e) {
       this.offset = offset
-      throw e
+
+      if (!(e instanceof RangeError)) {
+        throw e
+      }
     }
   }
 }
@@ -653,19 +656,19 @@ mpack.Encoder = function(buffer, offset) {
     throw "mpack doesn't know how to encode objects of type " + typeof(object)
   }
 
-  this.encode = function(object) {
+  var encode = function(self, object, encode_callback) {
     var size = 1000
 
-    if (this.buffer === null) {
-      this.buffer = new ArrayBuffer(size)
+    if (self.buffer === null) {
+      self.buffer = new ArrayBuffer(size)
     }
     else {
-      size = this.buffer.byteLength
+      size = self.buffer.byteLength
     }
 
     while (true) {
       try {
-        this.length += encode_object(new DataView(this.buffer), this.length, object)
+        self.length += encode_callback(new DataView(self.buffer), self.length, object)
         break
       }
       catch (e) {
@@ -674,11 +677,43 @@ mpack.Encoder = function(buffer, offset) {
         }
 
         size *= 10
-        this.buffer = mpack_memcpy__(new ArrayBuffer(size), this.buffer)
+        self.buffer = mpack_memcpy__(new ArrayBuffer(size), self.buffer)
       }
     }
 
-    return this
+    return self
+  }
+
+  this.encode = function(object) {
+    return encode(this, object, encode_object)
+  }
+
+  this.encode_nil = function() {
+    return encode(this, null, encode_null)
+  }
+
+  this.encode_boolean = function(object) {
+    return encode(this, null, object ? encode_true : encode_false)
+  }
+
+  this.encode_number = function(object) {
+    return encode(this, object, encode_number)
+  }
+
+  this.encode_string = function(object) {
+    return encode(this, object, encode_string)
+  }
+
+  this.encode_binary = function(object) {
+    return encode(this, object, encode_binary)
+  }
+
+  this.encode_array = function(object) {
+    return encode(this, object, encode_array)
+  }
+
+  this.encode_map = function(object) {
+    return encode(this, object, encode_map)
   }
 
   this.bytes = function() {
