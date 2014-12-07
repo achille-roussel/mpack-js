@@ -274,6 +274,122 @@ function MpackTestSuite() {
       self.assert(i == string.length)
     },
 
+    "fixext1": function(self) {
+      var object = new Uint8Array([42])
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(bytes.byteLength === 3)
+      self.assert(value.type === 10)
+      self.assert(value.data.byteLength === 1)
+      self.assert(value.data[0] === 42)
+    },
+
+    "fixext2": function(self) {
+      var object = new Uint8Array([1, 2])
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(bytes.byteLength === 4)
+      self.assert(value.type === 10)
+      self.assert(value.data.byteLength === 2)
+      self.assert(value.data[0] === 1)
+      self.assert(value.data[1] === 2)
+    },
+
+    "fixext4": function(self) {
+      var object = new Uint8Array([1, 2, 3, 4])
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(bytes.byteLength === 6)
+      self.assert(value.type === 10)
+      self.assert(value.data.byteLength === 4)
+      self.assert(value.data[0] === 1)
+      self.assert(value.data[1] === 2)
+      self.assert(value.data[2] === 3)
+      self.assert(value.data[3] === 4)
+    },
+
+    "fixext8": function(self) {
+      var object = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(bytes.byteLength === 10)
+      self.assert(value.type === 10)
+      self.assert(value.data.byteLength === 8)
+
+      for (var i = 0; i != 8; ++i) {
+        self.assert(value.data[i] === (i + 1))
+      }
+    },
+
+    "fixext16": function(self) {
+      var object = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(bytes.byteLength === 18)
+      self.assert(value.type === 10)
+      self.assert(value.data.byteLength === 16)
+
+      for (var i = 0; i != 16; ++i) {
+        self.assert(value.data[i] === (i + 1))
+      }
+    },
+
+    "ext8": function(self) {
+      var object = new Uint8Array(20)
+      for (var i = 0; i != 20; ++i) {
+        object[i] = (i % 256)
+      }
+
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(value.type == 10)
+      self.assert(value.data.byteLength == 20)
+
+      for (var i = 0; i != 20; ++i) {
+        self.assert(value.data[i] == (i % 256))
+      }
+    },
+
+    "ext16": function(self) {
+      var object = new Uint8Array(1000)
+      for (var i = 0; i != 1000; ++i) {
+        object[i] = (i % 256)
+      }
+
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(value.type == 10)
+      self.assert(value.data.byteLength == 1000)
+
+      for (var i = 0; i != 1000; ++i) {
+        self.assert(value.data[i] == (i % 256))
+      }
+    },
+
+    "ext32": function(self) {
+      var object = new Uint8Array(100000)
+      for (var i = 0; i != 100000; ++i) {
+        object[i] = (i % 256)
+      }
+
+      var bytes = mpack.encode_extended(10, object)
+      var value = mpack.decode(bytes)
+
+      self.assert(value.type == 10)
+      self.assert(value.data.byteLength == 100000)
+
+      for (var i = 0; i != 100000; ++i) {
+        self.assert(value.data[i] == (i % 256))
+      }
+    },
+
     "Encoder-Decoder": function(self) {
       var encoder = new mpack.Encoder()
       self.assert(encoder.encode('hello'))

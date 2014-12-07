@@ -259,6 +259,54 @@ mpack.Decoder = function(buffer) {
     return decode_map_of_length(self, length)
   }
 
+  var decode_extended_of_length = function(self, length) {
+    var type = self.view.getUint8(self.offset)
+    var offset = self.offset + 1
+    self.offset = offset + length
+    return {
+      'type': type,
+      'data': new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length),
+    }
+  }
+
+  var decode_fixext1 = function(self) {
+    return decode_extended_of_length(self, 1)
+  }
+
+  var decode_fixext2 = function(self) {
+    return decode_extended_of_length(self, 2)
+  }
+
+  var decode_fixext4 = function(self) {
+    return decode_extended_of_length(self, 4)
+  }
+
+  var decode_fixext8 = function(self) {
+    return decode_extended_of_length(self, 8)
+  }
+
+  var decode_fixext16 = function(self) {
+    return decode_extended_of_length(self, 16)
+  }
+
+  var decode_ext8 = function(self) {
+    var length = self.view.getUint8(self.offset)
+    self.offset += 1
+    return decode_extended_of_length(self, length)
+  }
+
+  var decode_ext16 = function(self) {
+    var length = self.view.getUint16(self.offset)
+    self.offset += 2
+    return decode_extended_of_length(self, length)
+  }
+
+  var decode_ext32 = function(self) {
+    var length = self.view.getUint32(self.offset)
+    self.offset += 4
+    return decode_extended_of_length(self, length)
+  }
+
   var decode_object = function(self) {
     var tag = self.view.getUint8(self.offset)
     self.offset += 1
@@ -352,6 +400,30 @@ mpack.Decoder = function(buffer) {
 
     case mpack.map32:
       return decode_map32(self)
+
+    case mpack.fixext1:
+      return decode_fixext1(self)
+
+    case mpack.fixext2:
+      return decode_fixext2(self)
+
+    case mpack.fixext4:
+      return decode_fixext4(self)
+
+    case mpack.fixext8:
+      return decode_fixext8(self)
+
+    case mpack.fixext16:
+      return decode_fixext16(self)
+
+    case mpack.ext8:
+      return decode_ext8(self)
+
+    case mpack.ext16:
+      return decode_ext16(self)
+
+    case mpack.ext32:
+      return decode_ext32(self)
 
     default:
       throw "mpack: decoder found an unknown tag: " + tag
@@ -592,6 +664,63 @@ mpack.Encoder = function(buffer, offset) {
     return offset - save_offset
   }
 
+  var encode_extended = function(view, offset, object) {
+    var save_offset = offset
+    var type = object.type
+    var data = object.data
+    var length = data.byteLength
+    
+    switch (length) {
+    case 1:
+      view.setUint8(offset, mpack.fixext1)
+      offset += 1
+      break;
+
+    case 2:
+      view.setUint8(offset, mpack.fixext2)
+      offset += 1
+      break;
+
+    case 4:
+      view.setUint8(offset, mpack.fixext4)
+      offset += 1
+      break;
+
+    case 8:
+      view.setUint8(offset, mpack.fixext8)
+      offset += 1
+      break;
+
+    case 16:
+      view.setUint8(offset, mpack.fixext16)
+      offset += 1
+      break;
+
+    default:
+      if (length <= 255) {
+        view.setUint8(offset, mpack.ext8)
+        view.setUint8(offset + 1, length)
+        offset += 2
+      }
+      else if (length <= 65535) {
+        view.setUint8(offset, mpack.ext16)
+        view.setUint16(offset + 1, length)
+        offset += 3
+      }
+      else {
+        view.setUint8(offset, mpack.ext32)
+        view.setUint32(offset + 1, length)
+        offset += 5
+      }
+    }
+
+    view.setUint8(offset, type)
+    offset += 1
+
+    new Uint8Array(view.buffer, view.byteOffset + offset).set(data)
+    return (offset + length) - save_offset
+  }
+
   var encode_object = function(view, offset, object) {
     if (object === null) {
       return encode_null(view, offset)
@@ -716,6 +845,13 @@ mpack.Encoder = function(buffer, offset) {
     return encode(this, object, encode_map)
   }
 
+  this.encode_extended = function(type, data) {
+    if ((type < -256) || (type > 255)) {
+      throw RangeError("mpack: invalid extended type [" + type + "]")
+    }
+    return encode(this, { 'type': type, 'data': data }, encode_extended)
+  }
+
   this.bytes = function() {
     return new DataView(this.buffer, 0, this.length)
   }
@@ -731,4 +867,8 @@ mpack.Encoder = function(buffer, offset) {
 
 mpack.encode = function(object) {
   return (new mpack.Encoder()).encode(object).flush()
+}
+
+mpack.encode_extended = function(type, data) {
+  return (new mpack.Encoder()).encode_extended(type, data).flush()
 }

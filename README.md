@@ -35,3 +35,25 @@ object = decoder.decode() // 42
 object = decoder.decode() // [1, 2, 3]
 object = decoder.decode() // undefined
 ```
+
+MessagePack Extensions
+----------------------
+
+MessagePack supports encoding *extended* types to embed arbitrary data into a
+serialized message.
+Here's a quick example showing how to use extended types with mpack-js:
+```js
+var data = new Uint8Array(...) // some pre-serialized data
+var type = 42 // must be an integer in the range [-256; 255]
+
+// Encode the given binary data as an extended data type using MessagePack
+// extension support.
+var bytes = mpack.encode_extended(type, data)
+
+// Decode works like any other data type, the returned object has two fields
+// named data and type.
+var object = mpack.decode(bytes)
+
+console.log(object.type) // 42
+console.log(object.data) // Uint8Array
+```
