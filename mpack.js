@@ -52,24 +52,12 @@ var mpack = {
     "positive": 0x00,
     "negative": 0xe0,
   },
-  "tags"    : null,
   "Decoder" : null,
   "decode"  : null,
   "Encoder" : null,
   "encode"  : null,
   "Extended": null,
 }
-
-var mpack_tags__ = { }
-for (name in mpack) {
-  var mpack_item__ = mpack[name]
-  if (mpack_item__ !== null) {
-    mpack_tags__[mpack_item__] = name
-  }
-}
-mpack.tags = mpack_tags__
-delete mpack_tags__
-delete mpack_item__
 
 mpack.Decoder = function(buffer) {
   if (typeof(buffer) === ArrayBuffer) {
