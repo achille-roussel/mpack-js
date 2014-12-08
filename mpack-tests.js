@@ -44,7 +44,7 @@ function MpackTestSuite() {
       self.assert(bytes.byteLength === 59)
       self.assert(value === string)
     },
-
+    
     "str16": function(self) {
       var string = (new Array(1000)).join('\u2022')
       var bytes = mpack.encode(string)

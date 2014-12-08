@@ -16,6 +16,7 @@
         for (test_name in test_suite.tests) {
           var test_results_entry = document.createElement('li')
           try {
+            console.log('testing: ' + test_name + '...')
             test_count += 1
             test_suite.run_test(test_name)
             test_results_entry.innerHTML = test_name + ' (OK)'
@@ -23,6 +24,7 @@
           catch (e) {
             test_fail += 1
             test_results_entry.innerHTML = test_name + ' (<span style="color:red">' + e + '</span>)'
+            console.log(e)
           }
           test_results.appendChild(test_results_entry)
         }

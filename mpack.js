@@ -436,6 +436,7 @@ mpack.decode = function(buffer) {
 }
 
 mpack.Encoder = function(buffer, offset) {
+  this.dataview = null
   this.buffer = null
   this.length = 0
 
@@ -452,175 +453,204 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var encode_nil = function(view, offset) {
-    view.setUint8(offset, mpack.nil)
-    return 1
+  var write_value = function(self, value, size, callback) {
+    var dataview = self.dataview
+    var offset = self.length
+
+    if ((offset + size) <= dataview.byteLength) {
+      callback(offset, value)
+    }
+
+    self.length += size
   }
 
-  var encode_false = function(view, offset) {
-    view.setUint8(offset, mpack.false)
-    return 1
+  var write_string = function(self, string, string_offset, string_length) {
+    var dataview = self.dataview
+    var offset = self.length
+
+    if ((offset + string_length) <= dataview.byteLength) {
+      for (var i = 0, j = offset; i != string_length; ++i, ++j) {
+        dataview.setUint8(j, string.charCodeAt(i + string_offset))
+      }
+    }
+
+    self.length += string_length
   }
 
-  var encode_true = function(view, offset) {
-    view.setUint8(offset, mpack.true)
-    return 1
-  }
+  var write_bytes = function(self, bytes, bytes_offset, bytes_length) {
+    var dataview = self.dataview
+    var offset = self.length
 
-  var encode_string = function(view, offset, object) {
-    var save_offset = offset
-    object = mpack_encode_utf8__(object)
-
-    if (object.length <= 31) {
-      view.setUint8(offset, mpack.fixstr | object.length)
-      offset += 1
+    if ((offset + bytes_length) <= dataview.byteLength) {
+      new Uint8Array(dataview.buffer, dataview.byteOffset + offset).set(bytes)
     }
-    else if (object.length <= 255) {
-      view.setUint8(offset, mpack.str8)
-      view.setUint8(offset + 1, object.length)
-      offset += 2
-    }
-    else if (object.length <= 65535) {
-      view.setUint8(offset, mpack.str16)
-      view.setUint16(offset + 1, object.length)
-      offset += 3
-    }
-    else {
-      view.setUint8(offset, mpack.str32)
-      view.setUint32(offset + 1, object.length)
-      offset += 5
-    }
-
-    for (var i = 0, j = offset; i != object.length; ++i, ++j) {
-      view.setUint8(j, object.charCodeAt(i))
-    }
-
-    return (offset + object.length) - save_offset
-  }
-
-  var encode_binary = function(view, offset, object) {
-    var save_offset = offset
     
-    if (object.byteLength <= 255) {
-      view.setUint8(offset, mpack.bin8)
-      view.setUint8(offset + 1, object.byteLength)
-      offset += 2
-    }
-    else if (object.byteLength <= 65535) {
-      view.setUint8(offset, mpack.bin16)
-      view.setUint16(offset + 1, object.byteLength)
-      offset += 3
-    }
-    else {
-      view.setUint8(offset, mpack.bin32)
-      view.setUint32(offset + 1, object.byteLength)
-      offset += 5
-    }
-
-    new Uint8Array(view.buffer, view.byteOffset + offset).set(object)
-    return (offset + object.byteLength) - save_offset    
+    self.length += bytes_length
   }
 
-  var encode_integer = function(view, offset, object) {
+  var write_uint8 = function(self, value) {
+    write_value(self, value, 1, function(offset, value) { self.dataview.setUint8(offset, value) })
+  }
+
+  var write_uint16 = function(self, value) {
+    write_value(self, value, 2, function(offset, value) { self.dataview.setUint16(offset, value) })
+  }
+
+  var write_uint32 = function(self, value) {
+    write_value(self, value, 4, function(offset, value) { self.dataview.setUint32(offset, value) })
+  }
+
+  var write_int8 = function(self, value) {
+    write_value(self, value, 1, function(offset, value) { self.dataview.setInt8(offset, value) })
+  }
+
+  var write_int16 = function(self, value) {
+    write_value(self, value, 2, function(offset, value) { self.dataview.setInt16(offset, value) } )
+  }
+
+  var write_int32 = function(self, value) {
+    write_value(self, value, 4, function(offset, value) { self.dataview.setInt32(offset, value) })
+  }
+
+  var write_float64 = function(self, value) {
+    write_value(self, value, 8, function(offset, value) { self.dataview.setFloat64(offset, value) })
+  }
+
+  var encode_nil = function(self) {
+    write_uint8(self, mpack.nil)
+  }
+
+  var encode_false = function(self) {
+    write_uint8(self, mpack.false)
+  }
+
+  var encode_true = function(self) {
+    write_uint8(self, mpack.true)
+  }
+
+  var encode_string = function(self, object) {
+    object = mpack_encode_utf8__(object)
+    var length = object.length
+
+    if (length <= 31) {
+      write_uint8(self, mpack.fixstr | length)
+    }
+    else if (length <= 255) {
+      write_uint8(self, mpack.str8)
+      write_uint8(self, length)
+    }
+    else if (length <= 65535) {
+      write_uint8(self, mpack.str16)
+      write_uint16(self, length)
+    }
+    else {
+      write_uint8(self, mpack.str32)
+      write_uint32(self, length)
+    }
+
+    write_string(self, object, 0, length)
+  }
+
+  var encode_binary = function(self, object) {
+    var length = object.byteLength
+    
+    if (length <= 255) {
+      write_uint8(self, mpack.bin8)
+      write_uint8(self, length)
+    }
+    else if (length <= 65535) {
+      write_uint8(self, mpack.bin16)
+      write_uint16(self, length)
+    }
+    else {
+      write_uint8(self, mpack.bin32)
+      write_uint32(self, length)
+    }
+
+    write_bytes(self, object, 0, length)
+  }
+
+  var encode_integer = function(self, object) {
     if (object >= 0) {
       if (object <= 127) {
-        view.setUint8(offset, mpack.fixnum.positive | object)
-        return 1        
+        write_uint8(self, mpack.fixnum.positive | object)
       }
-
-      if (object <= 255) {
-        view.setUint8(offset, mpack.uint8)
-        view.setUint8(offset + 1, object)
-        return 2
+      else if (object <= 255) {
+        write_uint8(self, mpack.uint8)
+        write_uint8(self, object)
       }
-
-      if (object <= 65535) {
-        view.setUint8(offset, mpack.uint16)
-        view.setUint16(offset + 1, object)
-        return 3
+      else if (object <= 65535) {
+        write_uint8(self, mpack.uint16)
+        write_uint16(self, object)
       }
-
-      if (object <= 4294967295) {
-        view.setUint8(offset, mpack.uint32)
-        view.setUint32(offset + 1, object)
-        return 5
+      else if (object <= 4294967295) {
+        write_uint8(self, mpack.uint32)
+        write_uint32(self, object)
       }
-
-      // TODO: maybe there's a more clever way to do this.
-      throw new TypeError("mpack: javascript doesn't support 64 bits integer")
+      else {
+        // TODO: maybe there's a more clever way to do this.
+        throw new TypeError("mpack: javascript doesn't support 64 bits integer")
+      }
     }
 
     else {
       if (object >= -15) {
-        view.setUint8(offset, mpack.fixnum.negative | object)
-        return 1
+        write_uint8(self, mpack.fixnum.negative | object)
       }
-
-      if (object >= -128) {
-        view.setUint8(offset, mpack.int8)
-        view.setInt8(offset + 1, object)
-        return 2
+      else if (object >= -128) {
+        write_uint8(self, mpack.int8)
+        write_int8(self, object)
       }
-
-      if (object >= -32768) {
-        view.setUint8(offset, mpack.int16)
-        view.setInt16(offset + 1, object)
-        return 3
+      else if (object >= -32768) {
+        write_uint8(self, mpack.int16)
+        write_int16(self, object)
       }
-
-      if (object >= -2147483648) {
-        view.setUint8(offset, mpack.int32)
-        view.setInt32(offset + 1, object)
-        return 5
+      else if (object >= -2147483648) {
+        write_uint8(self, mpack.int32)
+        write_int32(self, object)
       }
-
-      // TODO: maybe there's a more clever way to handle this.
-      throw new TypeError("mpack: javascript doesn't support 64 bits integer")
+      else {
+        // TODO: maybe there's a more clever way to handle this.
+        throw new TypeError("mpack: javascript doesn't support 64 bits integer")
+      }
     }
   }
 
-  var encode_float = function(view, offset, object) {
-    view.setUint8(offset, mpack.float64)
-    view.setFloat64(offset + 1, object)
-    return 9
+  var encode_float = function(self, object) {
+    write_uint8(self, mpack.float64)
+    write_float64(self, object)
   }
 
-  var encode_number = function(view, offset, object) {
+  var encode_number = function(self, object) {
     if ((object % 1) === 0) {
-      return encode_integer(view, offset, object)
+      return encode_integer(self, object)
     }
     else {
-      return encode_float(view, offset, object)
+      return encode_float(self, object)
     }
   }
 
-  var encode_array = function(view, offset, object) {
-    var save_offset = offset
-
-    if (object.length <= 15) {
-      view.setUint8(offset, mpack.fixarray | object.length)
-      offset += 1
+  var encode_array = function(self, object) {
+    var length = object.length
+    
+    if (length <= 15) {
+      write_uint8(self, mpack.fixarray | length)
     }
-    else if (object.length <= 65535) {
-      view.setUint8(offset, mpack.array16)
-      view.setUint16(offset + 1, object.length)
-      offset += 3
+    else if (length <= 65535) {
+      write_uint8(self, mpack.array16)
+      write_uint16(self, length)
     }
     else {
-      view.setUint8(offset, mpack.array32)
-      view.setUint32(offset + 1, object.length)
-      offset += 5
+      write_uint8(self, mpack.array32)
+      write_uint32(self, length)
     }
 
     for (i in object) {
-      offset += encode_object(view, offset, object[i])
+      encode_object(self, object[i])
     }
-
-    return offset - save_offset
   }
 
-  var encode_map = function(view, offset, object) {
-    var save_offset = offset
+  var encode_map = function(self, object) {
     var length = 0
 
     for (_ in object) {
@@ -628,176 +658,153 @@ mpack.Encoder = function(buffer, offset) {
     }
 
     if (length <= 15) {
-      view.setUint8(offset, mpack.fixmap | length)
-      offset += 1
+      write_uint8(self, mpack.fixmap | length)
     }
     else if (length <= 65535) {
-      view.setUint8(offset, mpack.map16)
-      view.setUint16(offset + 1, length)
-      offset += 3
+      write_uint8(self, mpack.map16)
+      write_uint16(self, length)
     }
     else {
-      view.setUint8(offset, mpack.map32)
-      view.setUint32(offset + 1, length)
-      offset += 5
+      write_uint8(self, mpack.map32)
+      write_uint32(self, length)
     }
 
     for (key in object) {
-      offset += encode_object(view, offset, key)
-      offset += encode_object(view, offset, object[key])
+      encode_object(self, key)
+      encode_object(self, object[key])
     }
-
-    return offset - save_offset
   }
 
-  var encode_extended = function(view, offset, object) {
-    var save_offset = offset
+  var encode_extended = function(self, object) {
     var type = object.type
     var data = object.data
     var length = data.byteLength
     
     switch (length) {
     case 1:
-      view.setUint8(offset, mpack.fixext1)
-      offset += 1
+      write_uint8(self, mpack.fixext1)
       break;
 
     case 2:
-      view.setUint8(offset, mpack.fixext2)
-      offset += 1
+      write_uint8(self, mpack.fixext2)
       break;
 
     case 4:
-      view.setUint8(offset, mpack.fixext4)
-      offset += 1
+      write_uint8(self, mpack.fixext4)
       break;
 
     case 8:
-      view.setUint8(offset, mpack.fixext8)
-      offset += 1
+      write_uint8(self, mpack.fixext8)
       break;
 
     case 16:
-      view.setUint8(offset, mpack.fixext16)
-      offset += 1
+      write_uint8(self, mpack.fixext16)
       break;
 
     default:
       if (length <= 255) {
-        view.setUint8(offset, mpack.ext8)
-        view.setUint8(offset + 1, length)
-        offset += 2
+        write_uint8(self, mpack.ext8)
+        write_uint8(self, length)
       }
       else if (length <= 65535) {
-        view.setUint8(offset, mpack.ext16)
-        view.setUint16(offset + 1, length)
-        offset += 3
+        write_uint8(self, mpack.ext16)
+        write_uint16(self, length)
       }
       else {
-        view.setUint8(offset, mpack.ext32)
-        view.setUint32(offset + 1, length)
-        offset += 5
+        write_uint8(self, mpack.ext32)
+        write_uint32(self, length)
       }
     }
 
-    view.setUint8(offset, type)
-    offset += 1
-
-    new Uint8Array(view.buffer, view.byteOffset + offset).set(data)
-    return (offset + length) - save_offset
+    write_uint8(self, type)
+    write_bytes(self, data, 0, length)
   }
 
-  var encode_object = function(view, offset, object) {
+  var encode_object = function(self, object) {
     if (object === null) {
-      return encode_nil(view, offset)
+      return encode_nil(self)
     }
 
     if (object === true) {
-      return encode_true(view, offset)
+      return encode_true(self)
     }
 
     if (object === false) {
-      return encode_false(view, offset)
+      return encode_false(self)
     }
 
     if ((typeof object) == 'string') {
-      return encode_string(view, offset, object)
+      return encode_string(self, object)
     }
 
     if ((typeof object) == 'number') {
-      return encode_number(view, offset, object)
+      return encode_number(self, object)
     }
 
     if (object instanceof Array) {
-      return encode_array(view, offset, object)
+      return encode_array(self, object)
     }
 
     if (object instanceof ArrayBuffer) {
-      return encode_binary(view, offset, new Uint8Array(object))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof Uint8Array) {
-      return encode_binary(view, offset, object)
+      return encode_binary(self, object)
     }
 
     if (object instanceof Uint16Array) {
-      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof Uint32Array) {
-      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof Int8Array) {
-      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof Int16Array) {
-      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof Int32Array) {
-      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof DataView) {
-      return encode_binary(view, offset, new Uint8Array(object.buffer, object.byteOffset, object.byteLength))
+      return encode_binary(self, new Uint8Array(object))
     }
 
     if (object instanceof mpack.Extended) {
-      return encode_extended(view, offset, object)
+      return encode_extended(self, object)
     }
 
     if ((typeof object) == 'object') {
-      return encode_map(view, offset, object)
+      return encode_map(self, object)
     }
       
     throw new TypeError("mpack: no encoding available for objects of type " + typeof(object))
   }
 
   var encode = function(self, object, encode_callback) {
-    var size = 1000
+    var old_length = self.length
 
     if (self.buffer === null) {
-      self.buffer = new ArrayBuffer(size)
+      self.buffer   = new ArrayBuffer(1000)
+      self.dataview = new DataView(self.buffer)
     }
-    else {
-      size = self.buffer.byteLength
-    }
+    
+    encode_callback(self, object)
+    var new_length = self.length
 
-    while (true) {
-      try {
-        self.length += encode_callback(new DataView(self.buffer), self.length, object)
-        break
-      }
-      catch (e) {
-        if (!(e instanceof RangeError)) {
-          throw e
-        }
-
-        size *= 10
-        self.buffer = mpack_memcpy__(new ArrayBuffer(size), self.buffer)
-      }
+    if (new_length > self.dataview.byteLength) {
+      new_length    = (Math.ceil(new_length / 1000) + ((new_length % 1000) == 0 ? 0 : 1)) * 1000
+      self.buffer   = mpack_memcpy__(new ArrayBuffer(new_length), self.buffer)
+      self.dataview = new DataView(self.buffer)
+      self.length   = old_length
+      encode_callback(self, object)
     }
 
     return self
@@ -848,7 +855,7 @@ mpack.Encoder = function(buffer, offset) {
   }
 
   this.bytes = function() {
-    return new Uint8Array(this.buffer, 0, this.length)
+    return (this.buffer === null) ? new Uint8Array() : new Uint8Array(this.buffer, 0, this.length)
   }
 
   this.flush = function() {
