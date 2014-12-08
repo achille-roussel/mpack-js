@@ -452,7 +452,7 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var encode_null = function(view, offset) {
+  var encode_nil = function(view, offset) {
     view.setUint8(offset, mpack.nil)
     return 1
   }
@@ -709,7 +709,7 @@ mpack.Encoder = function(buffer, offset) {
 
   var encode_object = function(view, offset, object) {
     if (object === null) {
-      return encode_null(view, offset)
+      return encode_nil(view, offset)
     }
 
     if (object === true) {
@@ -808,7 +808,7 @@ mpack.Encoder = function(buffer, offset) {
   }
 
   this.encode_nil = function() {
-    return encode(this, null, encode_null)
+    return encode(this, null, encode_nil)
   }
 
   this.encode_boolean = function(object) {
@@ -817,6 +817,14 @@ mpack.Encoder = function(buffer, offset) {
 
   this.encode_number = function(object) {
     return encode(this, object, encode_number)
+  }
+
+  this.encode_integer = function(object) {
+    return encode(this, object, encode_integer)
+  }
+
+  this.encode_float = function(object) {
+    return encode(this, object, encode_float)
   }
 
   this.encode_string = function(object) {
@@ -840,15 +848,14 @@ mpack.Encoder = function(buffer, offset) {
   }
 
   this.bytes = function() {
-    return new DataView(this.buffer, 0, this.length)
+    return new Uint8Array(this.buffer, 0, this.length)
   }
 
   this.flush = function() {
-    var buffer = this.buffer
-    var length = this.length
+    var bytes = this.bytes()
     this.buffer = null
     this.length = 0
-    return new DataView(buffer, 0, length)
+    return bytes
   }
 }
 
