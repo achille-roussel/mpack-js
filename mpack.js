@@ -168,7 +168,7 @@ mpack.Decoder = function(buffer) {
 
   var decode_int64 = function(self) {
     // TODO: maybe there's a more clever way to do this.
-    throw "mpack: javascript doesn't support 64 bits integer"
+    throw new TypeError("mpack: javascript doesn't support 64 bits integer")
   }
 
   var decode_uint8 = function(self) {
@@ -191,7 +191,7 @@ mpack.Decoder = function(buffer) {
 
   var decode_uint64 = function(self) {
     // TODO: maybe there's a more clever way to do this.
-    throw "mpack: javascript doesn't support 64 bits integer"
+    throw new TypeError("mpack: javascript doesn't support 64 bits integer")
   }
 
   var decode_float32 = function(self) {
@@ -424,7 +424,7 @@ mpack.Decoder = function(buffer) {
       return decode_ext32(self)
 
     default:
-      throw "mpack: decoder found an unknown tag: " + tag
+      throw new TypeError("mpack: decoder found an unknown tag: " + tag)
     }
   }
 
@@ -460,7 +460,7 @@ mpack.Encoder = function(buffer, offset) {
       }
     }
     else {
-      throw "mpack.Encoder: buffer must be undefined or an ArrayBuffer instance"
+      throw new TypeError("mpack.Encoder: buffer must be undefined or an ArrayBuffer instance")
     }
   }
 
@@ -559,7 +559,7 @@ mpack.Encoder = function(buffer, offset) {
       }
 
       // TODO: maybe there's a more clever way to do this.
-      throw "mpack: javascript doesn't support 64 bits integer"
+      throw new TypeError("mpack: javascript doesn't support 64 bits integer")
     }
 
     else {
@@ -587,7 +587,7 @@ mpack.Encoder = function(buffer, offset) {
       }
 
       // TODO: maybe there's a more clever way to handle this.
-      throw "mpack: javascript doesn't support 64 bits integer"
+      throw new TypeError("mpack: javascript doesn't support 64 bits integer")
     }
   }
 
@@ -784,7 +784,7 @@ mpack.Encoder = function(buffer, offset) {
       return encode_map(view, offset, object)
     }
       
-    throw "mpack doesn't know how to encode objects of type " + typeof(object)
+    throw new TypeError("mpack: no encoding available for objects of type " + typeof(object))
   }
 
   var encode = function(self, object, encode_callback) {
