@@ -65,8 +65,8 @@ mpack.Decoder = function(buffer) {
     this.offset = 0
     this.view   = new DataView(this.buffer)
   }
-  else { // expects an ArrayBufferView then
-    this.buffer = null
+  else { // expects a TypedArray
+    this.buffer = buffer.buffer
     this.offset = 0
     this.view   = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength)
   }
@@ -90,41 +90,35 @@ mpack.Decoder = function(buffer) {
   }
 
   var decode_str8 = function(self) {
-    var length = self.view.getUint8(self.offset)
-    self.offset += 1
-    return decode_string_of_length(self, length)
+    return decode_string_of_length(self, decode_uint8(self))
   }
 
   var decode_str16 = function(self) {
-    var length = self.view.getUint16(self.offset)
-    self.offset += 2
-    return decode_string_of_length(self, length)
+    return decode_string_of_length(self, decode_uint16(self))
   }
 
   var decode_str32 = function(self) {
-    var length = self.view.getUint32(self.offset)
-    self.offset += 4
-    return decode_string_of_length(self, length)
+    return decode_string_of_length(self, decode_uint32(self))
   }
 
   var decode_bin8 = function(self) {
-    var length = self.view.getUint8(self.offset)
-    var offset = self.offset + 1
-    self.offset = offset + length
+    var length = decode_uint8(self)
+    var offset = self.offset
+    self.offset += length
     return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
   var decode_bin16 = function(self) {
-    var length = self.view.getUint16(self.offset)
-    var offset = self.offset + 2
-    self.offset = offset + length
+    var length = decode_uint16(self)
+    var offset = self.offset
+    self.offset += length
     return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
   var decode_bin32 = function(self) {
-    var length = self.view.getUint32(self.offset)
-    var offset = self.offset + 4
-    self.offset = offset + length
+    var length = decode_uint32(self)
+    var offset = self.offset
+    self.offset += length
     return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
@@ -134,29 +128,6 @@ mpack.Decoder = function(buffer) {
 
   var decode_negative_fixnum = function(self, tag) {
     return self.view.getInt8(self.offset - 1)
-  }
-
-  var decode_int8 = function(self) {
-    var value = self.view.getInt8(self.offset)
-    self.offset += 1
-    return value
-  }
-
-  var decode_int16 = function(self) {
-    var value = self.view.getInt16(self.offset)
-    self.offset += 2
-    return value
-  }
-
-  var decode_int32 = function(self) {
-    var value = self.view.getInt32(self.offset)
-    self.offset += 4
-    return value
-  }
-
-  var decode_int64 = function(self) {
-    // TODO: maybe there's a more clever way to do this.
-    throw new TypeError("mpack: javascript doesn't support 64 bits integer")
   }
 
   var decode_uint8 = function(self) {
@@ -178,6 +149,29 @@ mpack.Decoder = function(buffer) {
   }
 
   var decode_uint64 = function(self) {
+    // TODO: maybe there's a more clever way to do this.
+    throw new TypeError("mpack: javascript doesn't support 64 bits integer")
+  }
+
+  var decode_int8 = function(self) {
+    var value = self.view.getInt8(self.offset)
+    self.offset += 1
+    return value
+  }
+
+  var decode_int16 = function(self) {
+    var value = self.view.getInt16(self.offset)
+    self.offset += 2
+    return value
+  }
+
+  var decode_int32 = function(self) {
+    var value = self.view.getInt32(self.offset)
+    self.offset += 4
+    return value
+  }
+
+  var decode_int64 = function(self) {
     // TODO: maybe there's a more clever way to do this.
     throw new TypeError("mpack: javascript doesn't support 64 bits integer")
   }
@@ -209,15 +203,11 @@ mpack.Decoder = function(buffer) {
   }
 
   var decode_array16 = function(self) {
-    var length = self.view.getUint16(self.offset)
-    self.offset += 2
-    return decode_array_of_length(self, length)
+    return decode_array_of_length(self, decode_uint16(self))
   }
 
   var decode_array32 = function(self) {
-    var length = self.view.getUint32(self.offset)
-    self.offset += 4
-    return decode_array_of_length(self, length)
+    return decode_array_of_length(self, decode_uint32(self))
   }
 
   var decode_map_of_length = function(self, length) {
@@ -237,21 +227,17 @@ mpack.Decoder = function(buffer) {
   }
 
   var decode_map16 = function(self) {
-    var length = self.view.getUint16(self.offset)
-    self.offset += 2
-    return decode_map_of_length(self, length)
+    return decode_map_of_length(self, decode_uint16(self))
   }
 
   var decode_map32 = function(self) {
-    var length = self.view.getUint32(self.offset)
-    self.offset += 4
-    return decode_map_of_length(self, length)
+    return decode_map_of_length(self, decode_uint32(self))
   }
 
   var decode_extended_of_length = function(self, length) {
-    var type = self.view.getUint8(self.offset)
-    var offset = self.offset + 1
-    self.offset = offset + length
+    var type = decode_uint8(self)
+    var offset = self.offset
+    self.offset += length
     return new mpack.Extended(type, new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length))
   }
 
@@ -276,26 +262,19 @@ mpack.Decoder = function(buffer) {
   }
 
   var decode_ext8 = function(self) {
-    var length = self.view.getUint8(self.offset)
-    self.offset += 1
-    return decode_extended_of_length(self, length)
+    return decode_extended_of_length(self, decode_uint8(self))
   }
 
   var decode_ext16 = function(self) {
-    var length = self.view.getUint16(self.offset)
-    self.offset += 2
-    return decode_extended_of_length(self, length)
+    return decode_extended_of_length(self, decode_uint16(self))
   }
 
   var decode_ext32 = function(self) {
-    var length = self.view.getUint32(self.offset)
-    self.offset += 4
-    return decode_extended_of_length(self, length)
+    return decode_extended_of_length(self, decode_uint32(self))
   }
 
   var decode_object = function(self) {
-    var tag = self.view.getUint8(self.offset)
-    self.offset += 1
+    var tag = decode_uint8(self)
 
     if ((tag & 0x80) == mpack.fixnum.positive) {
       return decode_positive_fixnum(self, tag)
@@ -436,7 +415,7 @@ mpack.decode = function(buffer) {
 }
 
 mpack.Encoder = function(buffer, offset) {
-  this.dataview = null
+  this.view = null
   this.buffer = null
   this.length = 0
 
@@ -454,10 +433,10 @@ mpack.Encoder = function(buffer, offset) {
   }
 
   var write_value = function(self, value, size, callback) {
-    var dataview = self.dataview
+    var view = self.view
     var offset = self.length
 
-    if ((offset + size) <= dataview.byteLength) {
+    if ((offset + size) <= view.byteLength) {
       callback(offset, value)
     }
 
@@ -465,12 +444,12 @@ mpack.Encoder = function(buffer, offset) {
   }
 
   var write_string = function(self, string, string_offset, string_length) {
-    var dataview = self.dataview
+    var view = self.view
     var offset = self.length
 
-    if ((offset + string_length) <= dataview.byteLength) {
+    if ((offset + string_length) <= view.byteLength) {
       for (var i = 0, j = offset; i != string_length; ++i, ++j) {
-        dataview.setUint8(j, string.charCodeAt(i + string_offset))
+        view.setUint8(j, string.charCodeAt(i + string_offset))
       }
     }
 
@@ -478,42 +457,42 @@ mpack.Encoder = function(buffer, offset) {
   }
 
   var write_bytes = function(self, bytes, bytes_offset, bytes_length) {
-    var dataview = self.dataview
+    var view = self.view
     var offset = self.length
 
-    if ((offset + bytes_length) <= dataview.byteLength) {
-      new Uint8Array(dataview.buffer, dataview.byteOffset + offset).set(bytes)
+    if ((offset + bytes_length) <= view.byteLength) {
+      new Uint8Array(view.buffer, view.byteOffset + offset).set(bytes)
     }
     
     self.length += bytes_length
   }
 
   var write_uint8 = function(self, value) {
-    write_value(self, value, 1, function(offset, value) { self.dataview.setUint8(offset, value) })
+    write_value(self, value, 1, function(offset, value) { self.view.setUint8(offset, value) })
   }
 
   var write_uint16 = function(self, value) {
-    write_value(self, value, 2, function(offset, value) { self.dataview.setUint16(offset, value) })
+    write_value(self, value, 2, function(offset, value) { self.view.setUint16(offset, value) })
   }
 
   var write_uint32 = function(self, value) {
-    write_value(self, value, 4, function(offset, value) { self.dataview.setUint32(offset, value) })
+    write_value(self, value, 4, function(offset, value) { self.view.setUint32(offset, value) })
   }
 
   var write_int8 = function(self, value) {
-    write_value(self, value, 1, function(offset, value) { self.dataview.setInt8(offset, value) })
+    write_value(self, value, 1, function(offset, value) { self.view.setInt8(offset, value) })
   }
 
   var write_int16 = function(self, value) {
-    write_value(self, value, 2, function(offset, value) { self.dataview.setInt16(offset, value) } )
+    write_value(self, value, 2, function(offset, value) { self.view.setInt16(offset, value) } )
   }
 
   var write_int32 = function(self, value) {
-    write_value(self, value, 4, function(offset, value) { self.dataview.setInt32(offset, value) })
+    write_value(self, value, 4, function(offset, value) { self.view.setInt32(offset, value) })
   }
 
   var write_float64 = function(self, value) {
-    write_value(self, value, 8, function(offset, value) { self.dataview.setFloat64(offset, value) })
+    write_value(self, value, 8, function(offset, value) { self.view.setFloat64(offset, value) })
   }
 
   var encode_nil = function(self) {
@@ -792,18 +771,18 @@ mpack.Encoder = function(buffer, offset) {
     var old_length = self.length
 
     if (self.buffer === null) {
-      self.buffer   = new ArrayBuffer(1000)
-      self.dataview = new DataView(self.buffer)
+      self.buffer = new ArrayBuffer(1000)
+      self.view   = new DataView(self.buffer)
     }
     
     encode_callback(self, object)
     var new_length = self.length
 
-    if (new_length > self.dataview.byteLength) {
-      new_length    = (Math.ceil(new_length / 1000) + ((new_length % 1000) == 0 ? 0 : 1)) * 1000
-      self.buffer   = mpack_memcpy__(new ArrayBuffer(new_length), self.buffer)
-      self.dataview = new DataView(self.buffer)
-      self.length   = old_length
+    if (new_length > self.view.byteLength) {
+      new_length  = (Math.ceil(new_length / 1000) + ((new_length % 1000) == 0 ? 0 : 1)) * 1000
+      self.buffer = mpack_memcpy__(new ArrayBuffer(new_length), self.buffer)
+      self.view   = new DataView(self.buffer)
+      self.length = old_length
       encode_callback(self, object)
     }
 
