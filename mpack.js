@@ -60,7 +60,7 @@ var mpack = {
 }
 
 mpack.Decoder = function(buffer) {
-  if (typeof(buffer) === ArrayBuffer) {
+  if (buffer instanceof ArrayBuffer) {
     this.buffer = buffer
     this.offset = 0
     this.view   = new DataView(this.buffer)
