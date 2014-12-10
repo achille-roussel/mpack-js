@@ -44,7 +44,7 @@ serialized message.
 Here's a quick example showing how to use extended types with mpack-js:
 ```js
 var data = new Uint8Array(...) // some pre-serialized data
-var type = 42 // must be an integer in the range [-256; 255]
+var type = 42 // must be an integer in the range [-128; 127]
 
 // Encode the given binary data as an extended data type using MessagePack
 // extension support.
