@@ -78,7 +78,7 @@ mpack.Decoder = function (buffer) {
     var buf = new Uint8Array(self.view.buffer, self.view.byteOffset + off, length)
     var str = ''
 
-    for (var i = 0, n = buf.byteLength; i != n; ++i) {
+    for (var i = 0, n = buf.byteLength; i !== n; ++i) {
       str += String.fromCharCode(buf[i])
     }
 
@@ -191,7 +191,7 @@ mpack.Decoder = function (buffer) {
   var decode_array_of_length = function (self, length) {
     var array = new Array(length)
 
-    for (var i = 0; i != length; ++i) {
+    for (var i = 0; i !== length; ++i) {
       array[i] = decode_object(self)
     }
 
@@ -213,7 +213,7 @@ mpack.Decoder = function (buffer) {
   var decode_map_of_length = function (self, length) {
     var map = { }
 
-    for (var i = 0; i != length; ++i) {
+    for (var i = 0; i !== length; ++i) {
       var k = decode_object(self)
       var v = decode_object(self)
       map[k] = v
@@ -276,23 +276,23 @@ mpack.Decoder = function (buffer) {
   var decode_object = function (self) {
     var tag = decode_uint8(self)
 
-    if ((tag & 0x80) == mpack.fixnum.positive) {
+    if ((tag & 0x80) === mpack.fixnum.positive) {
       return decode_positive_fixnum(self, tag)
     }
 
-    if ((tag & 0xE0) == mpack.fixnum.negative) {
+    if ((tag & 0xE0) === mpack.fixnum.negative) {
       return decode_negative_fixnum(self, tag)
     }
 
-    if ((tag & 0xE0) == mpack.fixstr) {
+    if ((tag & 0xE0) === mpack.fixstr) {
       return decode_fixstr(self, tag)
     }
 
-    if ((tag & 0xF0) == mpack.fixarray) {
+    if ((tag & 0xF0) === mpack.fixarray) {
       return decode_fixarray(self, tag)
     }
 
-    if ((tag & 0xF0) == mpack.fixmap) {
+    if ((tag & 0xF0) === mpack.fixmap) {
       return decode_fixmap(self, tag)
     }
 
@@ -448,7 +448,7 @@ mpack.Encoder = function (buffer, offset) {
     var offset = self.length
 
     if ((offset + string_length) <= view.byteLength) {
-      for (var i = 0, j = offset; i != string_length; ++i, ++j) {
+      for (var i = 0, j = offset; i !== string_length; ++i, ++j) {
         view.setUint8(j, string.charCodeAt(i + string_offset))
       }
     }
@@ -712,11 +712,11 @@ mpack.Encoder = function (buffer, offset) {
       return encode_false(self)
     }
 
-    if ((typeof object) == 'string') {
+    if ((typeof object) === 'string') {
       return encode_string(self, object)
     }
 
-    if ((typeof object) == 'number') {
+    if ((typeof object) === 'number') {
       return encode_number(self, object)
     }
 
@@ -760,7 +760,7 @@ mpack.Encoder = function (buffer, offset) {
       return encode_extended(self, object)
     }
 
-    if ((typeof object) == 'object') {
+    if ((typeof object) === 'object') {
       return encode_map(self, object)
     }
       
@@ -779,7 +779,7 @@ mpack.Encoder = function (buffer, offset) {
     var new_length = self.length
 
     if (new_length > self.view.byteLength) {
-      new_length  = (Math.ceil(new_length / 1000) + ((new_length % 1000) == 0 ? 0 : 1)) * 1000
+      new_length  = (Math.ceil(new_length / 1000) + ((new_length % 1000) === 0 ? 0 : 1)) * 1000
       self.buffer = mpack_memcpy__(new ArrayBuffer(new_length), self.buffer)
       self.view   = new DataView(self.buffer)
       self.length = old_length
