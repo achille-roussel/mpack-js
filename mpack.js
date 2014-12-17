@@ -59,7 +59,7 @@ var mpack = {
   "Extended": null,
 }
 
-mpack.Decoder = function(buffer) {
+mpack.Decoder = function (buffer) {
   if (buffer instanceof ArrayBuffer) {
     this.buffer = buffer
     this.offset = 0
@@ -71,7 +71,7 @@ mpack.Decoder = function(buffer) {
     this.view   = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength)
   }
 
-  var decode_string_of_length = function(self, length) {
+  var decode_string_of_length = function (self, length) {
     var off = self.offset
     self.offset += length
 
@@ -85,110 +85,110 @@ mpack.Decoder = function(buffer) {
     return mpack_decode_utf8__(str)
   }
 
-  var decode_fixstr = function(self, tag) {
+  var decode_fixstr = function (self, tag) {
     return decode_string_of_length(self, tag & ~mpack.fixstr)
   }
 
-  var decode_str8 = function(self) {
+  var decode_str8 = function (self) {
     return decode_string_of_length(self, decode_uint8(self))
   }
 
-  var decode_str16 = function(self) {
+  var decode_str16 = function (self) {
     return decode_string_of_length(self, decode_uint16(self))
   }
 
-  var decode_str32 = function(self) {
+  var decode_str32 = function (self) {
     return decode_string_of_length(self, decode_uint32(self))
   }
 
-  var decode_bin8 = function(self) {
+  var decode_bin8 = function (self) {
     var length = decode_uint8(self)
     var offset = self.offset
     self.offset += length
     return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
-  var decode_bin16 = function(self) {
+  var decode_bin16 = function (self) {
     var length = decode_uint16(self)
     var offset = self.offset
     self.offset += length
     return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
-  var decode_bin32 = function(self) {
+  var decode_bin32 = function (self) {
     var length = decode_uint32(self)
     var offset = self.offset
     self.offset += length
     return new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length)
   }
 
-  var decode_positive_fixnum = function(self, tag) {
+  var decode_positive_fixnum = function (self, tag) {
     return tag
   }
 
-  var decode_negative_fixnum = function(self, tag) {
+  var decode_negative_fixnum = function (self, tag) {
     return self.view.getInt8(self.offset - 1)
   }
 
-  var decode_uint8 = function(self) {
+  var decode_uint8 = function (self) {
     var value = self.view.getUint8(self.offset)
     self.offset += 1
     return value
   }
 
-  var decode_uint16 = function(self) {
+  var decode_uint16 = function (self) {
     var value = self.view.getUint16(self.offset)
     self.offset += 2
     return value
   }
 
-  var decode_uint32 = function(self) {
+  var decode_uint32 = function (self) {
     var value = self.view.getUint32(self.offset)
     self.offset += 4
     return value
   }
 
-  var decode_uint64 = function(self) {
+  var decode_uint64 = function (self) {
     // TODO: maybe there's a more clever way to do this.
     throw new TypeError("mpack: javascript doesn't support 64 bits integer")
   }
 
-  var decode_int8 = function(self) {
+  var decode_int8 = function (self) {
     var value = self.view.getInt8(self.offset)
     self.offset += 1
     return value
   }
 
-  var decode_int16 = function(self) {
+  var decode_int16 = function (self) {
     var value = self.view.getInt16(self.offset)
     self.offset += 2
     return value
   }
 
-  var decode_int32 = function(self) {
+  var decode_int32 = function (self) {
     var value = self.view.getInt32(self.offset)
     self.offset += 4
     return value
   }
 
-  var decode_int64 = function(self) {
+  var decode_int64 = function (self) {
     // TODO: maybe there's a more clever way to do this.
     throw new TypeError("mpack: javascript doesn't support 64 bits integer")
   }
 
-  var decode_float32 = function(self) {
+  var decode_float32 = function (self) {
     var value = self.view.getFloat32(self.offset)
     self.offset += 4
     return value
   }
 
-  var decode_float64 = function(self) {
+  var decode_float64 = function (self) {
     var value = self.view.getFloat64(self.offset)
     self.offset += 8
     return value
   }
 
-  var decode_array_of_length = function(self, length) {
+  var decode_array_of_length = function (self, length) {
     var array = new Array(length)
 
     for (var i = 0; i != length; ++i) {
@@ -198,19 +198,19 @@ mpack.Decoder = function(buffer) {
     return array
   }
 
-  var decode_fixarray = function(self, tag) {
+  var decode_fixarray = function (self, tag) {
     return decode_array_of_length(self, tag & ~mpack.fixarray)
   }
 
-  var decode_array16 = function(self) {
+  var decode_array16 = function (self) {
     return decode_array_of_length(self, decode_uint16(self))
   }
 
-  var decode_array32 = function(self) {
+  var decode_array32 = function (self) {
     return decode_array_of_length(self, decode_uint32(self))
   }
 
-  var decode_map_of_length = function(self, length) {
+  var decode_map_of_length = function (self, length) {
     var map = { }
 
     for (var i = 0; i != length; ++i) {
@@ -222,58 +222,58 @@ mpack.Decoder = function(buffer) {
     return map
   }
 
-  var decode_fixmap = function(self, tag) {
+  var decode_fixmap = function (self, tag) {
     return decode_map_of_length(self, tag & ~mpack.fixmap)
   }
 
-  var decode_map16 = function(self) {
+  var decode_map16 = function (self) {
     return decode_map_of_length(self, decode_uint16(self))
   }
 
-  var decode_map32 = function(self) {
+  var decode_map32 = function (self) {
     return decode_map_of_length(self, decode_uint32(self))
   }
 
-  var decode_extended_of_length = function(self, length) {
+  var decode_extended_of_length = function (self, length) {
     var type = decode_uint8(self)
     var offset = self.offset
     self.offset += length
     return new mpack.Extended(type, new Uint8Array(self.view.buffer, self.view.byteOffset + offset, length))
   }
 
-  var decode_fixext1 = function(self) {
+  var decode_fixext1 = function (self) {
     return decode_extended_of_length(self, 1)
   }
 
-  var decode_fixext2 = function(self) {
+  var decode_fixext2 = function (self) {
     return decode_extended_of_length(self, 2)
   }
 
-  var decode_fixext4 = function(self) {
+  var decode_fixext4 = function (self) {
     return decode_extended_of_length(self, 4)
   }
 
-  var decode_fixext8 = function(self) {
+  var decode_fixext8 = function (self) {
     return decode_extended_of_length(self, 8)
   }
 
-  var decode_fixext16 = function(self) {
+  var decode_fixext16 = function (self) {
     return decode_extended_of_length(self, 16)
   }
 
-  var decode_ext8 = function(self) {
+  var decode_ext8 = function (self) {
     return decode_extended_of_length(self, decode_uint8(self))
   }
 
-  var decode_ext16 = function(self) {
+  var decode_ext16 = function (self) {
     return decode_extended_of_length(self, decode_uint16(self))
   }
 
-  var decode_ext32 = function(self) {
+  var decode_ext32 = function (self) {
     return decode_extended_of_length(self, decode_uint32(self))
   }
 
-  var decode_object = function(self) {
+  var decode_object = function (self) {
     var tag = decode_uint8(self)
 
     if ((tag & 0x80) == mpack.fixnum.positive) {
@@ -395,7 +395,7 @@ mpack.Decoder = function(buffer) {
     }
   }
 
-  this.decode = function() {
+  this.decode = function () {
     var offset = this.offset
     try {
       return decode_object(this)
@@ -410,11 +410,11 @@ mpack.Decoder = function(buffer) {
   }
 }
 
-mpack.decode = function(buffer) {
+mpack.decode = function (buffer) {
   return (new mpack.Decoder(buffer)).decode()
 }
 
-mpack.Encoder = function(buffer, offset) {
+mpack.Encoder = function (buffer, offset) {
   this.view = null
   this.buffer = null
   this.length = 0
@@ -432,7 +432,7 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var write_value = function(self, value, size, callback) {
+  var write_value = function (self, value, size, callback) {
     var view = self.view
     var offset = self.length
 
@@ -443,7 +443,7 @@ mpack.Encoder = function(buffer, offset) {
     self.length += size
   }
 
-  var write_string = function(self, string, string_offset, string_length) {
+  var write_string = function (self, string, string_offset, string_length) {
     var view = self.view
     var offset = self.length
 
@@ -456,7 +456,7 @@ mpack.Encoder = function(buffer, offset) {
     self.length += string_length
   }
 
-  var write_bytes = function(self, bytes, bytes_offset, bytes_length) {
+  var write_bytes = function (self, bytes, bytes_offset, bytes_length) {
     var view = self.view
     var offset = self.length
 
@@ -467,47 +467,47 @@ mpack.Encoder = function(buffer, offset) {
     self.length += bytes_length
   }
 
-  var write_uint8 = function(self, value) {
-    write_value(self, value, 1, function(offset, value) { self.view.setUint8(offset, value) })
+  var write_uint8 = function (self, value) {
+    write_value(self, value, 1, function (offset, value) { self.view.setUint8(offset, value) })
   }
 
-  var write_uint16 = function(self, value) {
-    write_value(self, value, 2, function(offset, value) { self.view.setUint16(offset, value) })
+  var write_uint16 = function (self, value) {
+    write_value(self, value, 2, function (offset, value) { self.view.setUint16(offset, value) })
   }
 
-  var write_uint32 = function(self, value) {
-    write_value(self, value, 4, function(offset, value) { self.view.setUint32(offset, value) })
+  var write_uint32 = function (self, value) {
+    write_value(self, value, 4, function (offset, value) { self.view.setUint32(offset, value) })
   }
 
-  var write_int8 = function(self, value) {
-    write_value(self, value, 1, function(offset, value) { self.view.setInt8(offset, value) })
+  var write_int8 = function (self, value) {
+    write_value(self, value, 1, function (offset, value) { self.view.setInt8(offset, value) })
   }
 
-  var write_int16 = function(self, value) {
-    write_value(self, value, 2, function(offset, value) { self.view.setInt16(offset, value) } )
+  var write_int16 = function (self, value) {
+    write_value(self, value, 2, function (offset, value) { self.view.setInt16(offset, value) } )
   }
 
-  var write_int32 = function(self, value) {
-    write_value(self, value, 4, function(offset, value) { self.view.setInt32(offset, value) })
+  var write_int32 = function (self, value) {
+    write_value(self, value, 4, function (offset, value) { self.view.setInt32(offset, value) })
   }
 
-  var write_float64 = function(self, value) {
-    write_value(self, value, 8, function(offset, value) { self.view.setFloat64(offset, value) })
+  var write_float64 = function (self, value) {
+    write_value(self, value, 8, function (offset, value) { self.view.setFloat64(offset, value) })
   }
 
-  var encode_nil = function(self) {
+  var encode_nil = function (self) {
     write_uint8(self, mpack.nil)
   }
 
-  var encode_false = function(self) {
+  var encode_false = function (self) {
     write_uint8(self, mpack.false)
   }
 
-  var encode_true = function(self) {
+  var encode_true = function (self) {
     write_uint8(self, mpack.true)
   }
 
-  var encode_string = function(self, object) {
+  var encode_string = function (self, object) {
     object = mpack_encode_utf8__(object)
     var length = object.length
 
@@ -530,7 +530,7 @@ mpack.Encoder = function(buffer, offset) {
     write_string(self, object, 0, length)
   }
 
-  var encode_binary = function(self, object) {
+  var encode_binary = function (self, object) {
     var length = object.byteLength
     
     if (length <= 255) {
@@ -549,7 +549,7 @@ mpack.Encoder = function(buffer, offset) {
     write_bytes(self, object, 0, length)
   }
 
-  var encode_integer = function(self, object) {
+  var encode_integer = function (self, object) {
     if (object >= 0) {
       if (object <= 127) {
         write_uint8(self, mpack.fixnum.positive | object)
@@ -595,12 +595,12 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var encode_float = function(self, object) {
+  var encode_float = function (self, object) {
     write_uint8(self, mpack.float64)
     write_float64(self, object)
   }
 
-  var encode_number = function(self, object) {
+  var encode_number = function (self, object) {
     if ((object % 1) === 0) {
       return encode_integer(self, object)
     }
@@ -609,7 +609,7 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var encode_array = function(self, object) {
+  var encode_array = function (self, object) {
     var length = object.length
     
     if (length <= 15) {
@@ -629,7 +629,7 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var encode_map = function(self, object) {
+  var encode_map = function (self, object) {
     var length = 0
 
     for (_ in object) {
@@ -654,7 +654,7 @@ mpack.Encoder = function(buffer, offset) {
     }
   }
 
-  var encode_extended = function(self, object) {
+  var encode_extended = function (self, object) {
     var type = object.type
     var data = object.data
     var length = data.byteLength
@@ -699,7 +699,7 @@ mpack.Encoder = function(buffer, offset) {
     write_bytes(self, data, 0, length)
   }
 
-  var encode_object = function(self, object) {
+  var encode_object = function (self, object) {
     if (object === null) {
       return encode_nil(self)
     }
@@ -767,7 +767,7 @@ mpack.Encoder = function(buffer, offset) {
     throw new TypeError("mpack: no encoding available for objects of type " + typeof(object))
   }
 
-  var encode = function(self, object, encode_callback) {
+  var encode = function (self, object, encode_callback) {
     var old_length = self.length
 
     if (self.buffer === null) {
@@ -789,55 +789,55 @@ mpack.Encoder = function(buffer, offset) {
     return self
   }
 
-  this.encode = function(object) {
+  this.encode = function (object) {
     return encode(this, object, encode_object)
   }
 
-  this.encode_nil = function() {
+  this.encode_nil = function () {
     return encode(this, null, encode_nil)
   }
 
-  this.encode_boolean = function(object) {
+  this.encode_boolean = function (object) {
     return encode(this, null, object ? encode_true : encode_false)
   }
 
-  this.encode_number = function(object) {
+  this.encode_number = function (object) {
     return encode(this, object, encode_number)
   }
 
-  this.encode_integer = function(object) {
+  this.encode_integer = function (object) {
     return encode(this, object, encode_integer)
   }
 
-  this.encode_float = function(object) {
+  this.encode_float = function (object) {
     return encode(this, object, encode_float)
   }
 
-  this.encode_string = function(object) {
+  this.encode_string = function (object) {
     return encode(this, object, encode_string)
   }
 
-  this.encode_binary = function(object) {
+  this.encode_binary = function (object) {
     return encode(this, object, encode_binary)
   }
 
-  this.encode_array = function(object) {
+  this.encode_array = function (object) {
     return encode(this, object, encode_array)
   }
 
-  this.encode_map = function(object) {
+  this.encode_map = function (object) {
     return encode(this, object, encode_map)
   }
 
-  this.encode_extended = function(object) {
+  this.encode_extended = function (object) {
     return encode(this, object, encode_extended)
   }
 
-  this.bytes = function() {
+  this.bytes = function () {
     return (this.buffer === null) ? new Uint8Array() : new Uint8Array(this.buffer, 0, this.length)
   }
 
-  this.flush = function() {
+  this.flush = function () {
     var bytes = this.bytes()
     this.buffer = null
     this.length = 0
@@ -845,11 +845,11 @@ mpack.Encoder = function(buffer, offset) {
   }
 }
 
-mpack.encode = function(object) {
+mpack.encode = function (object) {
   return (new mpack.Encoder()).encode(object).flush()
 }
 
-mpack.Extended = function(type, data) {
+mpack.Extended = function (type, data) {
   if ((type < -256) || (type > 255)) {
     throw RangeError("mpack: invalid extended type [" + type + "]")
   }
