@@ -4,7 +4,7 @@ function MpackTestSuite() {
 
   this.assert = function(test) {
     if (!test) {
-      throw 'Failed'
+      throw new Error('Failed')
     }
   }
 
@@ -417,6 +417,7 @@ function MpackTestSuite() {
       }
       catch (e) {
         failed += 1
+        console.log(e.stack)
         console.log(e)
         console.log("- " + name + ": " + e)
       }
