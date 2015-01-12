@@ -1,6 +1,5 @@
-'using strict'
-
 var mpack = (function(mpack, undefined) {
+  'use strict'
 
   function encode_utf8(s) {
     return unescape(encodeURIComponent(s))
@@ -669,6 +668,7 @@ var mpack = (function(mpack, undefined) {
 
   function encode_array(self, object) {
     var length = object.length
+    var i = undefined
     
     if (length <= 15) {
       write_uint8(self, FIXARRAY | length)
@@ -689,6 +689,8 @@ var mpack = (function(mpack, undefined) {
 
   function encode_map(self, object) {
     var length = 0
+    var key = undefined
+    var _ = undefined
 
     for (_ in object) {
       length += 1
