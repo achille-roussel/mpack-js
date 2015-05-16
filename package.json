@@ -1,0 +1,33 @@
+{
+  "name": "mpack-js",
+  "version": "1.0.0",
+  "description": "MessagePack encoder and decoder for javascript.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/achille-roussel/mpack-js"
+  },
+  "keywords": [
+    "MessagePack",
+    "msgpack",
+    "messagepack",
+    "message",
+    "pack",
+    "serialization",
+    "deserialization",
+    "encode",
+    "decode",
+    "encoding",
+    "decoding",
+    "compact"
+  ],
+  "author": "Achille Roussel (achille.roussel@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/achille-roussel/mpack-js/issues"
+  },
+  "homepage": "https://github.com/achille-roussel/mpack-js"
+}
