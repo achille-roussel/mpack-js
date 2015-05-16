@@ -8,6 +8,8 @@ Usage
 
 Here's a simple example of how to use mpack-js:
 ```js
+var mpack = require('mpack-js')
+
 var bytes = mpack.encode({
     "hello" : "world",
     "answer": 42,
@@ -21,6 +23,8 @@ console.log(object.answer) // 42
 You can also use the Encoder and Decoder objects to build MessagePack messages
 from a sequence of multiple objects:
 ```js
+var mpack = require('mpack-js')
+
 var encoder = new mpack.Encoder()
 
 encoder.encode('hello')
@@ -43,6 +47,8 @@ MessagePack supports encoding *extended* types to embed arbitrary data into a
 serialized message.
 Here's a quick example showing how to use extended types with mpack-js:
 ```js
+var mpack = require('mpack-js')
+
 var data = new Uint8Array(...) // some pre-serialized data
 var type = 42 // must be an integer in the range [-128; 127]
 
