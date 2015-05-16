@@ -31,4 +31,6 @@ function Extended(type, data) {
   this.data = data
 }
 
-exports.Extended = Extended
+module.exports = {
+  Extended: Extended,
+}

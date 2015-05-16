@@ -555,5 +555,7 @@ function encode(object) {
     return (new Encoder()).encode(object).bytes()
 }
 
-exports.Encoder  = Encoder
-exports.encode   = encode
+module.exports = {
+  Encoder : Encoder,
+  encode  : encode,
+}

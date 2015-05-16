@@ -426,8 +426,10 @@ Decoder.prototype.decode = function decode() {
 }
 
 function decode(buffer) {
-  return (new mpack.Decoder(buffer)).decode()
+  return (new Decoder(buffer)).decode()
 }
 
-exports.Decoder  = Decoder
-exports.decode   = decode
+module.exports = {
+  Decoder : Decoder,
+  decode  : decode,
+}
