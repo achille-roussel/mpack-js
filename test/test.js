@@ -321,7 +321,7 @@ describe('mpack: encode/decode', function () {
   })
 
   describe('map32', function () {
-    it('encodes and decodes a map of length 10000', function () {
+    it('encodes and decodes a map of length 100000', function () {
       var object = { }
       var string = (new Array(100000)).join('a');
       var bytes  = undefined

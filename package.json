@@ -29,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/achille-roussel/mpack-js/issues"
   },
-  "homepage": "https://github.com/achille-roussel/mpack-js"
+  "homepage": "https://github.com/achille-roussel/mpack-js",
+  "devDependencies": {
+    "mocha": ">=2.2.5"
+  }
 }
