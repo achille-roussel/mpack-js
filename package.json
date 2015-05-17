@@ -1,6 +1,6 @@
 {
   "name": "mpack-js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "MessagePack encoder and decoder for javascript.",
   "main": "index.js",
   "scripts": {
