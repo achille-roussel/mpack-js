@@ -8,8 +8,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes null', function () {
       var bytes = mpack.encode(null)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 1)
-      assert(value === null)
+      assert.strictEqual(bytes.byteLength, 1)
+      assert.strictEqual(value, null)
     })
   })
 
@@ -17,8 +17,8 @@ describe('mpack: encode/decode', function () {
     it('encodes an decodes true', function () {
       var bytes = mpack.encode(true)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 1)
-      assert(value === true)
+      assert.strictEqual(bytes.byteLength, 1)
+      assert.strictEqual(value, true)
     })
   })
 
@@ -26,8 +26,8 @@ describe('mpack: encode/decode', function () {
     it('encodes an decodes false', function () {
       var bytes = mpack.encode(false)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 1)
-      assert(value === false)
+      assert.strictEqual(bytes.byteLength, 1)
+      assert.strictEqual(value, false)
     })
   })
 
@@ -35,8 +35,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 15 bytes string', function () {
       var bytes = mpack.encode('hello\u2022world!')
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 15)
-      assert(value === 'hello\u2022world!')
+      assert.strictEqual(bytes.byteLength, 15)
+      assert.strictEqual(value, 'hello\u2022world!')
     })
   })
 
@@ -45,8 +45,8 @@ describe('mpack: encode/decode', function () {
       var string = (new Array(20)).join('\u2022')
       var bytes = mpack.encode(string)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 59)
-      assert(value === string)
+      assert.strictEqual(bytes.byteLength, 59)
+      assert.strictEqual(value, string)
     })
   })
 
@@ -55,8 +55,8 @@ describe('mpack: encode/decode', function () {
       var string = (new Array(1000)).join('\u2022')
       var bytes = mpack.encode(string)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 3000)
-      assert(value === string)
+      assert.strictEqual(bytes.byteLength, 3000)
+      assert.strictEqual(value, string)
     })
   })
 
@@ -65,8 +65,8 @@ describe('mpack: encode/decode', function () {
       var string = (new Array(100000)).join('\u2022')
       var bytes = mpack.encode(string)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 300002)
-      assert(value === string)
+      assert.strictEqual(bytes.byteLength, 300002)
+      assert.strictEqual(value, string)
     })
   })
 
@@ -77,18 +77,18 @@ describe('mpack: encode/decode', function () {
       var value  = undefined
       var index  = undefined
 
-      for (index = 0; index != 20; ++index) {
+      for (index = 0; index !== 20; ++index) {
         binary[index] = index % 256
       }
 
       bytes = mpack.encode(binary)
       value = mpack.decode(bytes)
 
-      assert(bytes.byteLength == 22)
-      assert(value.byteLength == 20)
+      assert.strictEqual(bytes.byteLength, 22)
+      assert.strictEqual(value.byteLength, 20)
 
-      for (index = 0; index != 20; ++index) {
-        assert(value[index] == (index % 256))
+      for (index = 0; index !== 20; ++index) {
+        assert.strictEqual(value[index], (index % 256))
       }
     })
   })
@@ -100,18 +100,18 @@ describe('mpack: encode/decode', function () {
       var value  = undefined
       var index  = undefined
 
-      for (index = 0; index != 1000; ++index) {
+      for (index = 0; index !== 1000; ++index) {
         binary[index] = index % 256
       }
 
       bytes = mpack.encode(binary)
       value = mpack.decode(bytes)
 
-      assert(bytes.byteLength == 1003)
-      assert(value.byteLength == 1000)
+      assert.strictEqual(bytes.byteLength, 1003)
+      assert.strictEqual(value.byteLength, 1000)
 
-      for (index = 0; index != 1000; ++index) {
-        assert(value[index] == (index % 256))
+      for (index = 0; index !== 1000; ++index) {
+        assert.strictEqual(value[index], (index % 256))
       }
     })
   })
@@ -123,18 +123,18 @@ describe('mpack: encode/decode', function () {
       var value  = undefined
       var index  = undefined
 
-      for (index = 0; index != 100000; ++index) {
+      for (index = 0; index !== 100000; ++index) {
         binary[index] = index % 256
       }
 
       bytes = mpack.encode(binary)
       value = mpack.decode(bytes)
 
-      assert(bytes.byteLength == 100005)
-      assert(value.byteLength == 100000)
+      assert.strictEqual(bytes.byteLength, 100005)
+      assert.strictEqual(value.byteLength, 100000)
 
-      for (index = 0; index != 100000; ++index) {
-        assert(value[index] == (index % 256))
+      for (index = 0; index !== 100000; ++index) {
+        assert.strictEqual(value[index], (index % 256))
       }
     })
   })
@@ -143,8 +143,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a positive fixnum integer', function () {
       var bytes = mpack.encode(0)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 1)
-      assert(value === 0)
+      assert.strictEqual(bytes.byteLength, 1)
+      assert.strictEqual(value, 0)
     })
   })
 
@@ -152,8 +152,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a negative fixnum integer', function () {
       var bytes = mpack.encode(-1)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 1)
-      assert(value === -1)
+      assert.strictEqual(bytes.byteLength, 1)
+      assert.strictEqual(value, -1)
     })
   })
 
@@ -161,8 +161,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 8 bits signed integer', function () {
       var bytes = mpack.encode(-128)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 2)
-      assert(value === -128)
+      assert.strictEqual(bytes.byteLength, 2)
+      assert.strictEqual(value, -128)
     })
   })
 
@@ -170,8 +170,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 16 bits signed integer', function () {
       var bytes = mpack.encode(-32768)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 3)
-      assert(value === -32768)
+      assert.strictEqual(bytes.byteLength, 3)
+      assert.strictEqual(value, -32768)
     })
   })
 
@@ -179,8 +179,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 32 bits signed integer', function () {
       var bytes = mpack.encode(-2147483648)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 5)
-      assert(value === -2147483648)
+      assert.strictEqual(bytes.byteLength, 5)
+      assert.strictEqual(value, -2147483648)
     })
   })
 
@@ -188,8 +188,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 8 bits unsigned integer', function () {
       var bytes = mpack.encode(255)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 2)
-      assert(value === 255)
+      assert.strictEqual(bytes.byteLength, 2)
+      assert.strictEqual(value, 255)
     })
   })
 
@@ -197,8 +197,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 16 bits unsigned integer', function () {
       var bytes = mpack.encode(65535)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 3)
-      assert(value === 65535)
+      assert.strictEqual(bytes.byteLength, 3)
+      assert.strictEqual(value, 65535)
     })
   })
 
@@ -206,8 +206,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 32 bits unsigned integer', function () {
       var bytes = mpack.encode(4294967295)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 5)
-      assert(value === 4294967295)
+      assert.strictEqual(bytes.byteLength, 5)
+      assert.strictEqual(value, 4294967295)
     })
   })
 
@@ -215,8 +215,8 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes a 64 bits floating point number', function () {
       var bytes = mpack.encode(1.234)
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 9)
-      assert(value === 1.234)
+      assert.strictEqual(bytes.byteLength, 9)
+      assert.strictEqual(value, 1.234)
     })
   })
 
@@ -224,11 +224,11 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes an array of length 3', function () {
       var bytes = mpack.encode([null, true, 0])
       var value = mpack.decode(bytes)
-      assert(bytes.byteLength === 4)
-      assert(value.length === 3)
-      assert(value[0] === null)
-      assert(value[1] === true)
-      assert(value[2] === 0)
+      assert.strictEqual(bytes.byteLength, 4)
+      assert.strictEqual(value.length, 3)
+      assert.strictEqual(value[0], null)
+      assert.strictEqual(value[1], true)
+      assert.strictEqual(value[2], 0)
     })
   })
 
@@ -239,17 +239,17 @@ describe('mpack: encode/decode', function () {
       var bytes = undefined
       var value = undefined
 
-      for (index = 0; index != 20; ++index) {
+      for (index = 0; index !== 20; ++index) {
         array[index] = null;
       }
 
       bytes = mpack.encode(array)
       value = mpack.decode(bytes)
-      assert(bytes.byteLength === 23)
-      assert(value.length === 20)
+      assert.strictEqual(bytes.byteLength, 23)
+      assert.strictEqual(value.length, 20)
 
-      for (index = 0; index != 20; ++index) {
-        assert(value[index] === null)
+      for (index = 0; index !== 20; ++index) {
+        assert.strictEqual(value[index], null)
       }
     })
   })
@@ -261,17 +261,17 @@ describe('mpack: encode/decode', function () {
       var bytes = undefined
       var value = undefined
 
-      for (index = 0; index != 100000; ++index) {
+      for (index = 0; index !== 100000; ++index) {
         array[index] = null;
       }
 
       bytes = mpack.encode(array)
       value = mpack.decode(bytes)
-      assert(bytes.byteLength === 100005)
-      assert(value.length === 100000)
+      assert.strictEqual(bytes.byteLength, 100005)
+      assert.strictEqual(value.length, 100000)
 
-      for (index = 0; index != 100000; ++index) {
-        assert(value[index] === null)
+      for (index = 0; index !== 100000; ++index) {
+        assert.strictEqual(value[index], null)
       }
     })
   })
@@ -283,15 +283,15 @@ describe('mpack: encode/decode', function () {
       var key   = undefined
       var count = 0
 
-      assert(bytes.byteLength === 13)
+      assert.strictEqual(bytes.byteLength, 13)
 
       for (key in value) {
-        assert(key == 'hello')
-        assert(value[key] == 'world')
+        assert.strictEqual(key, 'hello')
+        assert.strictEqual(value[key], 'world')
         ++count
       }
 
-      assert(count == 1)
+      assert.strictEqual(count, 1)
     })
   })
 
@@ -312,12 +312,12 @@ describe('mpack: encode/decode', function () {
       value = mpack.decode(bytes)
 
       for (key in value) {
-        assert(key == count)
-        assert(value[key] == string[key])
+        assert.strictEqual(key, "" + count)
+        assert.strictEqual(value[key], string[key])
         ++count
       }
 
-      assert(count == string.length)
+      assert.strictEqual(count, string.length)
     })
   })
 
@@ -338,12 +338,12 @@ describe('mpack: encode/decode', function () {
       value = mpack.decode(bytes)
 
       for (key in value) {
-        assert(key == count)
-        assert(value[key] == string[key])
+        assert.strictEqual(key, "" + count)
+        assert.strictEqual(value[key], string[key])
         ++count
       }
 
-      assert(count == string.length)
+      assert.strictEqual(count, string.length)
     })
   })
 
@@ -353,10 +353,10 @@ describe('mpack: encode/decode', function () {
       var bytes  = mpack.encode(new mpack.Extended(10, object))
       var value  = mpack.decode(bytes)
 
-      assert(bytes.byteLength === 3)
-      assert(value.type === 10)
-      assert(value.data.byteLength === 1)
-      assert(value.data[0] === 42)
+      assert.strictEqual(bytes.byteLength, 3)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 1)
+      assert.strictEqual(value.data[0], 42)
     })
   })
 
@@ -366,11 +366,11 @@ describe('mpack: encode/decode', function () {
       var bytes  = mpack.encode(new mpack.Extended(10, object))
       var value  = mpack.decode(bytes)
 
-      assert(bytes.byteLength === 4)
-      assert(value.type === 10)
-      assert(value.data.byteLength === 2)
-      assert(value.data[0] === 1)
-      assert(value.data[1] === 2)
+      assert.strictEqual(bytes.byteLength, 4)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 2)
+      assert.strictEqual(value.data[0], 1)
+      assert.strictEqual(value.data[1], 2)
     })
   })
 
@@ -380,13 +380,13 @@ describe('mpack: encode/decode', function () {
       var bytes  = mpack.encode(new mpack.Extended(10, object))
       var value  = mpack.decode(bytes)
 
-      assert(bytes.byteLength === 6)
-      assert(value.type === 10)
-      assert(value.data.byteLength === 4)
-      assert(value.data[0] === 1)
-      assert(value.data[1] === 2)
-      assert(value.data[2] === 3)
-      assert(value.data[3] === 4)
+      assert.strictEqual(bytes.byteLength, 6)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 4)
+      assert.strictEqual(value.data[0], 1)
+      assert.strictEqual(value.data[1], 2)
+      assert.strictEqual(value.data[2], 3)
+      assert.strictEqual(value.data[3], 4)
     })
   })
 
@@ -397,12 +397,12 @@ describe('mpack: encode/decode', function () {
       var value  = mpack.decode(bytes)
       var index  = undefined
 
-      assert(bytes.byteLength === 10)
-      assert(value.type === 10)
-      assert(value.data.byteLength === 8)
+      assert.strictEqual(bytes.byteLength, 10)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 8)
 
-      for (index = 0; index != 8; ++index) {
-        assert(value.data[index] === (index + 1))
+      for (index = 0; index !== 8; ++index) {
+        assert.strictEqual(value.data[index], (index + 1))
       }
     })
   })
@@ -414,12 +414,12 @@ describe('mpack: encode/decode', function () {
       var value  = mpack.decode(bytes)
       var index  = undefined
 
-      assert(bytes.byteLength === 18)
-      assert(value.type === 10)
-      assert(value.data.byteLength === 16)
+      assert.strictEqual(bytes.byteLength, 18)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 16)
 
-      for (index = 0; index != 16; ++index) {
-        assert(value.data[index] === (index + 1))
+      for (index = 0; index !== 16; ++index) {
+        assert.strictEqual(value.data[index], (index + 1))
       }
     })
   })
@@ -431,18 +431,18 @@ describe('mpack: encode/decode', function () {
       var bytes  = undefined
       var value  = undefined
 
-      for (index = 0; index != 20; ++index) {
+      for (index = 0; index !== 20; ++index) {
         object[index] = (index % 256)
       }
 
       bytes = mpack.encode(new mpack.Extended(10, object))
       value = mpack.decode(bytes)
 
-      assert(value.type == 10)
-      assert(value.data.byteLength == 20)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 20)
 
-      for (index = 0; index != 20; ++index) {
-        assert(value.data[index] == (index % 256))
+      for (index = 0; index !== 20; ++index) {
+        assert.strictEqual(value.data[index], (index % 256))
       }
     })
   })
@@ -454,18 +454,18 @@ describe('mpack: encode/decode', function () {
       var bytes  = undefined
       var value  = undefined
 
-      for (index = 0; index != 1000; ++index) {
+      for (index = 0; index !== 1000; ++index) {
         object[index] = (index % 256)
       }
 
       bytes = mpack.encode(new mpack.Extended(10, object))
       value = mpack.decode(bytes)
 
-      assert(value.type == 10)
-      assert(value.data.byteLength == 1000)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 1000)
 
-      for (index = 0; index != 1000; ++index) {
-        assert(value.data[index] == (index % 256))
+      for (index = 0; index !== 1000; ++index) {
+        assert.strictEqual(value.data[index], (index % 256))
       }
     })
   })
@@ -477,18 +477,18 @@ describe('mpack: encode/decode', function () {
       var bytes  = undefined
       var value  = undefined
 
-      for (index = 0; index != 100000; ++index) {
+      for (index = 0; index !== 100000; ++index) {
         object[index] = (index % 256)
       }
 
       bytes = mpack.encode(new mpack.Extended(10, object))
       value = mpack.decode(bytes)
 
-      assert(value.type == 10)
-      assert(value.data.byteLength == 100000)
+      assert.strictEqual(value.type, 10)
+      assert.strictEqual(value.data.byteLength, 100000)
 
-      for (index = 0; index != 100000; ++index) {
-        assert(value.data[index] == (index % 256))
+      for (index = 0; index !== 100000; ++index) {
+        assert.strictEqual(value.data[index], (index % 256))
       }
     })
   })
