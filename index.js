@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-'using struct'
+'use struct'
 
 var d = require('./mpack/decode.js')
 var e = require('./mpack/encode.js')

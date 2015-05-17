@@ -1,4 +1,4 @@
-'using strict'
+'use strict'
 
 var assert = require('assert')
 var mpack  = require('../index.js')
@@ -280,6 +280,7 @@ describe('mpack: encode/decode', function () {
     it('encodes and decodes an map of length 1', function () {
       var bytes = mpack.encode({'hello': 'world'})
       var value = mpack.decode(bytes)
+      var key   = undefined
       var count = 0
 
       assert(bytes.byteLength === 13)
