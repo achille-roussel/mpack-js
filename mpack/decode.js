@@ -23,7 +23,7 @@
  */
 'use strict'
 
-var Extended = require('./extended.js').Extended
+var Extended = require('./extended.js')
 
 var NIL      = 0xc0
 var FALSE    = 0xc2

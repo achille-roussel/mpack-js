@@ -23,7 +23,7 @@
  */
 'use strict'
 
-var Extended = require('./extended.js').Extended
+var Extended = require('./extended.js')
 
 var NIL      = 0xc0
 var FALSE    = 0xc2
@@ -71,7 +71,7 @@ function encodeUTF8(s) {
   return unescape(encodeURIComponent(s))
 }
 
-function Encoder(buffer, offset) {
+function Encoder(buffer) {
   this.view   = undefined
   this.buffer = undefined
   this.length = 0
@@ -79,10 +79,6 @@ function Encoder(buffer, offset) {
   if (buffer !== undefined) {
     if (buffer instanceof ArrayBuffer) {
       this.buffer = buffer
-
-      if (offset !== undefined) {
-        this.length = offset
-      }
     }
     else {
       throw new TypeError("mpack.Encoder: buffer must be undefined or an ArrayBuffer instance")
