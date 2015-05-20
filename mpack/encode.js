@@ -201,6 +201,16 @@ function encodeTrue(self) {
   writeUint8(self, TRUE)
 }
 
+function encodeBoolean(self, object) {
+  if (object === true) {
+    return encodeTrue(self)
+  }
+
+  if (object === false) {
+    return encodeFalse(self)
+  }
+}
+
 function encodeString(self, object) {
   var length = undefined
 
@@ -398,24 +408,25 @@ function encodeExtended(self, object) {
 }
 
 function encodeObject(self, object) {
+  switch (typeof object) {
+  case 'string':
+    return encodeString(self, object)
+
+  case 'number':
+    return encodeNumber(self, object)
+
+  case 'boolean':
+    return encodeBoolean(self, object)
+
+  case 'object':
+    break
+
+  default:
+    return
+  }
+
   if (object === null) {
     return encodeNil(self)
-  }
-
-  if (object === true) {
-    return encodeTrue(self)
-  }
-
-  if (object === false) {
-    return encodeFalse(self)
-  }
-
-  if ((typeof object) === 'string') {
-    return encodeString(self, object)
-  }
-
-  if ((typeof object) === 'number') {
-    return encodeNumber(self, object)
   }
 
   if (object instanceof Array) {
