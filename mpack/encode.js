@@ -24,6 +24,7 @@
 'use strict'
 
 var Extended = require('./extended.js')
+var utf8     = require('utf8')
 
 var NIL      = 0xc0
 var FALSE    = 0xc2
@@ -68,7 +69,7 @@ function memcpy(dst, src) {
 }
 
 function encodeUTF8(s) {
-  return unescape(encodeURIComponent(s))
+  return utf8.encode(s)
 }
 
 function Encoder(buffer) {

@@ -24,6 +24,7 @@
 'use strict'
 
 var Extended = require('./extended.js')
+var utf8     = require('utf8')
 
 var NIL      = 0xc0
 var FALSE    = 0xc2
@@ -63,7 +64,7 @@ var POSITIVE_FIXNUM = 0x00
 var NEGATIVE_FIXNUM = 0xe0
 
 function decodeUTF8(s) {
-  return decodeURIComponent(escape(s))
+  return utf8.decode(s)
 }
 
 function Decoder(buffer) {
